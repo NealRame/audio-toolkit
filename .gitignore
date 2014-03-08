@@ -13,3 +13,7 @@
 *.a
 
 /audio-toolkit.sublime-workspace
+/Makefile.depends
+/Debug/
+/Release/
+/Tests/
