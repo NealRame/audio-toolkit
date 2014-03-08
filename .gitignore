@@ -11,3 +11,5 @@
 *.lai
 *.la
 *.a
+
+/audio-toolkit.sublime-workspace
