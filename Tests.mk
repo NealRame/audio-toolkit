@@ -2,7 +2,7 @@ CFLAGS    += -O0 -g -DDEBUG -DTEST
 CXXFLAGS  += -O0 -g -DDEBUG -DTEST
 
 all: $(OBJECTS) libgtest.a gtest_main.o
-	$(CXX) $(CXXFLAGS) -pthread -o proto-audio-metadata-test $^
+	$(CXX) $(CXXFLAGS) -o proto-audio-metadata-test $^
 
 libgtest.a: gtest-all.o gmock-all.o
 	ar -rv libgtest.a gtest-all.o gmock-all.o
