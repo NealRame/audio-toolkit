@@ -11,7 +11,7 @@ const unsigned int SAMPLE_RATE   = 44100;
 
 int main(int argc, char **argv) {
 	char data[CHANNEL_COUNT*SAMPLE_RATE*sizeof(float)];
-	utils::buffer buf(data, sizeof(data));
+	utils::static_buffer buf(data, sizeof(data));
 	audio::sequence seq(audio::format(CHANNEL_COUNT, SAMPLE_RATE), buf);
 
 	auto first = seq.begin();

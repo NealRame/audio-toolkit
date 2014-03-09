@@ -24,33 +24,34 @@ namespace audio {
 /// 
 class format {
 public:
-	///
-	format (unsigned int channel_count, unsigned int sample_rate) throw(audio::error);
+	/// Initialize a frame container format given a channel count and 
+	/// sample rate
+	format (unsigned int channel_count, unsigned int sample_rate)
+		throw(audio::error);
 public:
-	///
+	/// Return true if and only if this format and the other one are equals
 	bool operator==(const format &other) const;
+	bool operator!=(const format &other) const { return !(*this == other);}
 public:
-	///
+	/// Return this format channel count
 	unsigned int channel_count () const
 	{ return channel_count_; }
-	///
-	format & set_channel_count (unsigned int count) throw(audio::error);
-	///
+	/// Return this format sample rate
 	unsigned int sample_rate () const
 	{ return sample_rate_; }
-	///
+	/// Update this format sample rate
 	format & set_sample_rate (unsigned int rate) throw(audio::error);
-	///
+	/// Return the duration of a frame container for a given frame count
 	double duration (unsigned int frame_count) const;
-	///
+	/// Return the duration of a frame container for a given size
 	double duration (size_t size) const;
-	///
+	/// Return the frame count of a frame container for a given size
 	unsigned int frame_count (size_t size) const;
-	///
+	/// Return the frame count of frame container for a given duration
 	unsigned int frame_count (double duration) const;
-	///
+	/// Return the size of a frame container for a given frame count
 	size_t size (unsigned int frame_count) const;
-	///
+	/// Return the size of a frame container for a given duration
 	size_t size (double duration) const;
 private:
 	unsigned int channel_count_;

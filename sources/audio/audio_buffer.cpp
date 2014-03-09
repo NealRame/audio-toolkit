@@ -2,58 +2,108 @@
 #include "audio_error.h"
 #include "audio_frame.h"
 
-using namespace com::nealrame::audio;
+using namespace com::nealrame;
 
-buffer::buffer (class format fmt) :
-	format_(fmt) {
+struct audio::buffer::impl {
+	impl (audio::format fmt) :
+		sequence(fmt, raw_buffer) {
+	}
+	impl (audio::format fmt, utils::buffer &raw) :
+		raw_buffer(raw),
+		sequence(fmt, raw_buffer) {
+	}
+	com::nealrame::utils::dynamic_buffer raw_buffer;
+	class sequence sequence;
+};
+
+audio::buffer::buffer (class format fmt) :
+	pimpl_(new impl(fmt)) {
 }
 
-buffer::buffer (class format format, unsigned int frame_count) :
-	format_(format),
-	frames_(static_cast<size_t>(0), format_.size(frame_count)) {
-
+audio::buffer::buffer (class format fmt, unsigned int frame_count) :
+	pimpl_(new impl(fmt)) {
+	reserve(frame_count);
 }
 
-buffer::buffer (class format format, double duration) :
-	format_(format),
-	frames_(static_cast<size_t>(0), format_.size(duration)) {
+audio::buffer::buffer (class format fmt, double duration) :
+	pimpl_(new impl(fmt)) {
+	reserve(duration);
 }
 
-buffer::buffer (class format format, com::nealrame::utils::abstract_buffer frames) :
-	format_(format),
-	frames_(frames.length()) {
+audio::buffer::buffer (class format fmt, utils::buffer &raw) :
+	pimpl_(new impl(fmt, raw)) {
 }
 
-format buffer::format () const {
-	return format_;
+audio::buffer::~buffer () {
 }
 
-double buffer::duration () const {
-	return format_.duration(frame_count());
+audio::format audio::buffer::format () const {
+	return pimpl_->sequence.format();
 }
 
-unsigned int buffer::frame_count () const {
-	return format_.frame_count(frames_.length());
+double audio::buffer::duration () const {
+	return pimpl_->sequence.duration();
 }
 
-frame buffer::frame_at(unsigned int frame_index) {
-	return *(begin() + frame_index);
+unsigned int audio::buffer::frame_count () const {
+	return pimpl_->sequence.frame_count();
 }
 
-buffer::iterator buffer::begin () {
-	return iterator();
-	// return iterator(format_, frames_.begin<float>());
+void audio::buffer::append (const_frame &f) throw(error) {
+	if (f.channel_count != format().channel_count()) {
+		error::raise(error::FormatDoesNotMatch);
+	}
+	pimpl_->raw_buffer.append(f.size());
+	*(pimpl_->sequence.end() - 1) = f;
 }
 
-buffer::iterator buffer::end () {
-	return iterator();
-	// return begin() + frame_count();
+void audio::buffer::append (const class sequence &seq) throw(error) {
+	if (seq.format() != format()) {
+		error::raise(error::FormatDoesNotMatch);
+	}
+	pimpl_->raw_buffer.append(seq.raw_buffer());
 }
 
-buffer::const_iterator buffer::begin () const {
-	return const_iterator();
+size_t audio::buffer::capacity () const { 
+	return pimpl_->raw_buffer.capacity(); 
 }
 
-buffer::const_iterator buffer::end () const {
-	return const_iterator();
+void audio::buffer::reserve (double d) {
+	pimpl_->raw_buffer.reserve(format().size(d));
+}
+
+void audio::buffer::reserve (unsigned int c) {
+	pimpl_->raw_buffer.reserve(format().size(c));
+}
+
+void audio::buffer::enlarge (double d) {
+	pimpl_->raw_buffer.enlarge(format().size(d));
+}
+
+void audio::buffer::enlarge (unsigned int c) {
+	pimpl_->raw_buffer.enlarge(format().size(c));
+}
+
+void audio::buffer::shrink (double d) {
+	pimpl_->raw_buffer.shrink(format().size(d));
+}
+
+void audio::buffer::shrink (unsigned int c) {
+	pimpl_->raw_buffer.shrink(format().size(c));
+}
+
+com::nealrame::utils::buffer & audio::buffer::raw_buffer () {
+	return pimpl_->raw_buffer;
+}
+
+const com::nealrame::utils::buffer & audio::buffer::raw_buffer () const {
+	return const_cast<buffer *>(this)->raw_buffer();
+}
+
+class audio::sequence & audio::buffer::sequence() {
+	return pimpl_->sequence;
+}
+
+const class audio::sequence & audio::buffer::sequence() const {
+	return const_cast<audio::buffer *>(this)->sequence();
 }

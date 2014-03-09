@@ -11,21 +11,16 @@ using namespace com::nealrame::audio;
 format::format (
 	unsigned int channel_count, 
 	unsigned int sample_rate) throw(audio::error) {
-	set_channel_count(channel_count);
+	if (channel_count < 1) {
+		error::raise(error::FormatBadChannelCountValue);
+	}
+	channel_count_ = channel_count;
 	set_sample_rate(sample_rate);
 }
 
 bool format::operator==(const format &other) const {
 	return channel_count_ == other.channel_count_
 			&& sample_rate_ == other.sample_rate_;
-}
-
-format & format::set_channel_count (unsigned int count) throw(audio::error) {
-	if (count < 1) {
-		error::raise(error::FormatBadChannelCountValue);
-	}
-	channel_count_ = count;
-	return *this;
 }
 
 format & format::set_sample_rate (unsigned int rate) throw(audio::error) {

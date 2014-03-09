@@ -3,16 +3,23 @@
 
 #include "audio_error.h"
 #include "audio_frame.h"
+#include "audio_const_frame.h"
 
 using namespace com::nealrame::audio;
 
-frame::frame(frame &&other) :
+const_frame::const_frame (const frame &frame) :
+	channel_count(frame.channel_count),
+	first_(frame.begin()),
+	last_(frame.end()) {
+}
+
+const_frame::const_frame(const_frame &&other) :
 	channel_count(other.channel_count),
 	first_(other.first_),
 	last_(other.last_) {
 }
 
-frame::frame (unsigned int channel_count, iterator first) :
+const_frame::const_frame (unsigned int channel_count, iterator first) :
 	channel_count(channel_count),
 	first_(first),
 	last_(first_ + channel_count) {

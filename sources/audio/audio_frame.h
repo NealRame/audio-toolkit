@@ -6,16 +6,14 @@
 #include <iterator>
 #include <vector>
 
-#include <utils/abstract_buffer>
 #include <utils/buffer>
 #include <audio/error>
 #include <audio/format>
+#include <audio/frame>
 
 namespace com {
 namespace nealrame {
 namespace audio {
-
-using samples = com::nealrame::utils::abstract_buffer;
 
 /// com::nealrame::audio::buffer
 /// 
@@ -23,15 +21,14 @@ using samples = com::nealrame::utils::abstract_buffer;
 /// nothing more than a sample container with an assign format descriptor.
 class frame {
 public:
-	const unsigned int channel_count;
+	typedef com::nealrame::utils::buffer::iterator<float> iterator;
+	typedef com::nealrame::utils::buffer::const_iterator<float> const_iterator;
 public:
-	typedef com::nealrame::utils::abstract_buffer::iterator<float> iterator;
-	typedef com::nealrame::utils::abstract_buffer::const_iterator<float> const_iterator;
-public:
-	frame (const frame &);
-	frame (unsigned int channel_count, samples &samples);
-	frame (unsigned int channel_count, samples::iterator<float> first);
+	frame (frame &&);
+	frame (unsigned int channel_count, iterator first);
 	frame () = delete;
+public:
+	size_t size () const { return channel_count*sizeof(float); }
 public:
 	iterator begin () { return first_; }
 	iterator end () { return last_; }
@@ -39,6 +36,7 @@ public:
 	const_iterator end () const { return last_; }
 	const_iterator cbegin () const { return begin(); }
 	const_iterator cend () const { return end(); }
+public:
 	template<typename Container>
 	inline void write (Container c)
 		throw(error) {
@@ -94,77 +92,16 @@ public:
 		write(other.begin(), other.end());
 		return *this;
 	}
+	frame & operator= (const_frame &other) {
+		write(other.begin(), other.end());
+		return *this;
+	}
+public:
+	const unsigned int channel_count;
 private:
 	iterator first_;
 	iterator last_;
 };
-
-template <typename T>
-struct frame_iterator;
-
-template <>
-struct frame_iterator<frame> {
-	typedef frame::iterator type;
-};
-
-template <>
-struct frame_iterator<frame const> {
-	typedef frame::const_iterator type;
-};
-
-template<>
-inline void frame::write<::std::initializer_list<uint8_t>::const_iterator> (
-		::std::initializer_list<uint8_t>::const_iterator first,
-		::std::initializer_list<uint8_t>::const_iterator last)
-	throw(error) = delete;
-
-template<>
-inline void frame::write<::std::initializer_list<uint16_t>::const_iterator> (
-		::std::initializer_list<uint16_t>::const_iterator first,
-		::std::initializer_list<uint16_t>::const_iterator last)
-	throw(error) = delete;
-
-template<>
-inline void frame::write<::std::initializer_list<int32_t>::const_iterator> (
-		::std::initializer_list<int32_t>::const_iterator first,
-		::std::initializer_list<int32_t>::const_iterator last)
-	throw(error) = delete;
-
-template<>
-inline void frame::write<::std::initializer_list<uint32_t>::const_iterator> (
-		::std::initializer_list<uint32_t>::const_iterator first,
-		::std::initializer_list<uint32_t>::const_iterator last)
-	throw(error) = delete;
-
-template<>
-inline void frame::write<::std::initializer_list<uint64_t>::const_iterator> (
-		::std::initializer_list<uint64_t>::const_iterator first,
-		::std::initializer_list<uint64_t>::const_iterator last)
-	throw(error) = delete;
-
-template<>
-inline void frame::write<::std::initializer_list<int64_t>::const_iterator> (
-		::std::initializer_list<int64_t>::const_iterator first,
-		::std::initializer_list<int64_t>::const_iterator last)
-	throw(error) = delete;
-
-template<>
-inline void frame::write<::std::vector<uint8_t>::const_iterator> (
-		::std::vector<uint8_t>::const_iterator first,
-		::std::vector<uint8_t>::const_iterator last)
-	throw(error) = delete;
-
-template<>
-inline void frame::write<::std::vector<uint16_t>::const_iterator> (
-		::std::vector<uint16_t>::const_iterator first,
-		::std::vector<uint16_t>::const_iterator last)
-	throw(error) = delete;
-
-template<>
-inline void frame::write<::std::vector<uint32_t>::const_iterator> (
-		::std::vector<uint32_t>::const_iterator first,
-		::std::vector<uint32_t>::const_iterator last)
-	throw(error) = delete;
 
 template<>
 inline void frame::write<::std::initializer_list<float>::const_iterator> (
@@ -189,30 +126,6 @@ inline void frame::write<::std::vector<float>::const_iterator> (
 }
 
 template<>
-inline void frame::write (uint8_t *first, uint8_t *last)
-	throw(error) = delete;
-
-template<>
-inline void frame::write (uint16_t *first, uint16_t *last)
-	throw(error) = delete;
-
-template<>
-inline void frame::write (int32_t *first, int32_t *last)
-	throw(error) = delete;
-
-template<>
-inline void frame::write (uint32_t *first, uint32_t *last)
-	throw(error) = delete;
-
-template<>
-inline void frame::write (int64_t *first, int64_t *last)
-	throw(error) = delete;
-
-template<>
-inline void frame::write (uint64_t *first, uint64_t *last)
-	throw(error) = delete;
-
-template<>
 inline void frame::write (float *first, float *last)
 	throw(error) {
 	if ((last - first) != channel_count) {
@@ -222,63 +135,9 @@ inline void frame::write (float *first, float *last)
 }
 
 template<>
-inline void frame::read<::std::vector<uint8_t>::iterator> (
-		::std::vector<uint8_t>::iterator output)
-	= delete;
-
-template<>
-inline void frame::read<::std::vector<uint16_t>::iterator> (
-		::std::vector<uint16_t>::iterator output)
-	= delete;
-
-template<>
-inline void frame::read<::std::vector<int32_t>::iterator> (
-		::std::vector<int32_t>::iterator output)
-	= delete;
-
-template<>
-inline void frame::read<::std::vector<uint32_t>::iterator> (
-		::std::vector<uint32_t>::iterator output) 
-	= delete;
-
-template<>
-inline void frame::read<::std::vector<int64_t>::iterator> (
-		::std::vector<int64_t>::iterator output)
-	= delete;
-
-template<>
-inline void frame::read<::std::vector<uint64_t>::iterator> (
-		::std::vector<uint64_t>::iterator output) 
-	= delete;
-
-template<>
 inline void frame::read<::std::vector<float>::iterator> (::std::vector<float>::iterator output) {
 	::std::copy(first_, last_, output);
 }
-
-template<>
-inline void frame::read<uint8_t> (uint8_t *output)
-	= delete;
-
-template<>
-inline void frame::read<uint16_t> (uint16_t *output)
-	= delete;
-
-template<>
-inline void frame::read<int32_t> (int32_t *output)
-	= delete;
-
-template<>
-inline void frame::read<uint32_t> (uint32_t *output)
-	= delete;
-
-template<>
-inline void frame::read<int64_t> (int64_t *output)
-	= delete;
-
-template<>
-inline void frame::read<uint64_t> (uint64_t *output)
-	= delete;
 
 template<>
 inline void frame::read<float *> (float *output) {
@@ -289,4 +148,4 @@ inline void frame::read<float *> (float *output) {
 } // namespace nealrame
 } // namespace com
 
-#endif /* AUDIO_BUFFER_H_ */
+#endif /* AUDIO_FRAME_H_ */

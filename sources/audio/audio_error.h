@@ -21,6 +21,7 @@ namespace audio {
 class error {
 public:
 	enum status {
+		FormatDoesNotMatch,
 		FormatBadValue,
 		FormatBadChannelCountValue,
 		FormatBadSampleRateValue,

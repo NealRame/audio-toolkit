@@ -2,9 +2,17 @@
 
 using namespace com::nealrame::audio;
 
-sequence::sequence (class format format, com::nealrame::utils::abstract_buffer &frames) :
-	format_(format),
-	frames_(frames) {
+sequence::sequence (const class format &fmt, com::nealrame::utils::buffer &buffer) :
+	format_(fmt),
+	raw_buffer_(buffer) {
+}
+
+sequence::sequence (sequence &&other) :
+	format_(other.format_),
+	raw_buffer_(other.raw_buffer_.data(), other.size()) {
+}
+
+sequence::~sequence () {
 }
 
 class format sequence::format () const {
@@ -12,19 +20,27 @@ class format sequence::format () const {
 }
 
 double sequence::duration () const {
-	return format_.duration(frame_count());
+	return format_.duration(raw_buffer_.length());
 }
 
 unsigned int sequence::frame_count () const {
-	return frames_.count<float>()/format_.channel_count(); 
+	return format_.frame_count(raw_buffer_.length());
 }
 
-frame sequence::frame_at (unsigned int frame_index) {
+size_t sequence::size () const {
+	return raw_buffer_.length();
+}
+
+frame sequence::frame_at (size_type frame_index) {
+	return *(begin() + frame_index);
+}
+
+const_frame sequence::frame_at (size_type frame_index) const {
 	return *(begin() + frame_index);
 }
 
 sequence::iterator sequence::begin () {
-	return iterator(format_.channel_count(), frames_.begin<float>());
+	return iterator(format_.channel_count(), raw_buffer_.begin<float>());
 }
 
 sequence::iterator sequence::end () {
