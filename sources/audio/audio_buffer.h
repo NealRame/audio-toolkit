@@ -27,56 +27,48 @@ public:
 	explicit buffer (class format);
 	buffer (class format, unsigned int frame_count);
 	buffer (class format, double duration);
-	buffer (class format, com::nealrame::utils::buffer &);
 	virtual ~buffer ();
 public:
 	class format format () const;
 	double duration () const;
 	unsigned int frame_count () const;
 public:
-	/// Append the given `const_frame` to this buffer, increasing its
-	/// capacity if needed.
+	/// Add some frames to the end of this `buffer` to increase its
+	/// duration by the given duration.
+	/// If the parameter `clear` is set to `true`, set all the new sample
+	/// to zero.
+	void append (double duration, bool clear = false);
+	/// Add the given count of frames to the end of this `buffer`.
+	/// If the parameter `clear` is set to `true`, set all the new sample
+	/// to zero.
+	void append (unsigned int frame_count, bool clear = false);
+	/// Append the given `sequence` to this `buffer`.
 	///
-	/// If the specified frame have a different channel count than this
-	/// `dynamic_buffer` a `error` exception with status 
-	/// `FormatDoesNotMatch` will be raised.
-	void append (const_frame &) throw(error);
-	/// Append the given `sequence` to this buffer, increasing its capacity
-	/// if needed.
-	/// 
 	/// If the specified sequence have a different format than this
-	/// `dynamic_buffer` a `error` exception with status 
-	/// `FormatDoesNotMatch` will be raised.
+	/// `buffer` an `error` exception with status `FormatDoesNotMatch` will
+	/// be raised.
 	void append (const sequence &) throw(error);
-public:
-	/// Get the current capacity of this `buffer`.
-	size_t capacity () const;
+	/// Removes some frames from the end of this buffer to decrease its 
+	/// duration of the specified amount.
+	void cutdown (double duration);
+	/// Remove the given count of frames from the end of this `buffer`.
+	void cutdown (unsigned int frame_count);
 	/// Adjust the buffer internal capacity so that it can contain the
 	/// required count of frames for the given duration.
 	/// If the specified duration is shortest than the current duration
 	/// then all the frames beyond the given duration will be lost.
-	void reserve (double duration);
+	/// If `duration` is greater than this `buffer` current duration and 
+	/// parameter `clear` is `true` then all the new samples are set to 
+	/// zero.
+	void set_duration (double duration, bool clear = false);
 	/// Adjust the buffer internal capacity so that it can contain the
 	/// specified count of frames.
 	/// If the specified frame count is lower than the current frame count
 	/// then all the frames after the given frame count will be lost.
-	void reserve (unsigned int frame_count);
-	/// Increase the internal capacity of the buffer by the amount required
-	/// to contain the number of frames required for the specified
-	/// duration.
-	/// It will not increase the current duration.
-	void enlarge (double duration);
-	/// Increase the internal capacity of the buffer by the amount required
-	/// to contain the specified count of frames.
-	/// It will not increase the current frame count.
-	void enlarge (unsigned int frame_count);
-	/// Decrease the internal capacity of the buffer by the amount needed
-	/// to contain the number of frames required for the specified 
-	/// duration.
-	void shrink (double duration);
-	/// Decrease the internal capacity of the buffer by the amount required
-	/// to contain the specified number of frames.
-	void shrink (unsigned int frame_count);
+	/// If `frame_count` is greater than this `buffer` current frame_count
+	/// and parameter `clear` is `true` then all the new samples are set 
+	/// to zero.
+	void set_frame_count (unsigned int frame_count, bool clear = false);
 public:
 	/// Return a reference on the raw data buffer of this `dynamic_buffer`
 	com::nealrame::utils::buffer & raw_buffer ();
@@ -86,10 +78,10 @@ public:
 public:
 	/// Return a reference on a sequence starting at the begening of this
 	/// `dynamic_buffer` and ending at the last frame.
-	class sequence & sequence();
+	class sequence sequence();
 	/// Return a constant reference on a sequence starting at the begening
 	/// of this `dynamic_buffer` and ending at the last frame.
-	const class sequence & sequence() const;
+	const class sequence sequence() const;
 private:
 	struct impl;
 	std::unique_ptr<impl> pimpl_;
