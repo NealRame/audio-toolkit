@@ -25,5 +25,9 @@ void com::nealrame::audio::PrintTo (const enum error::status s, ::std::ostream *
 			*os << (unsigned int)s;
 			break;
 	}
+
+	if (message) {
+		*os << endl << message;
+	}
 }
 #endif
