@@ -21,20 +21,32 @@ namespace audio {
 class error {
 public:
 	enum status {
+		// format errors
 		FormatDoesNotMatch,
 		FormatBadValue,
 		FormatBadChannelCountValue,
 		FormatBadSampleRateValue,
 		FormatBadBitDepthValue,
 		FormatUndefined,
+		// codec errors
+		CodecNoSuitableCoderFound,
+		CodecNoSuitableDecoderFound,
+		CodecFormatError,
+		CodecIOError,
+		CodecUnexpectedError,
+		// misc errors
 		NotImplemented,
 	};
 public:
 	static void raise (status s) throw(error) {
-		throw error{s};
+		throw error{s, nullptr};
+	}
+	static void raise (status s, const char *msg) throw(error) {
+		throw error{s, msg};
 	}
 public:
 	const status status;
+	const char *message;
 };
 
 #if defined(TEST)
