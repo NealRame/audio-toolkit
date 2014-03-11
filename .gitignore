@@ -17,3 +17,5 @@
 /Debug/
 /Release/
 /Tests/
+
+*.wav
