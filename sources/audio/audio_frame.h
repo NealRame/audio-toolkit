@@ -10,6 +10,7 @@
 #include <audio/error>
 #include <audio/format>
 #include <audio/frame>
+#include <audio/sample>
 
 namespace com {
 namespace nealrame {
@@ -24,7 +25,6 @@ public:
 	typedef com::nealrame::utils::buffer::iterator<float> iterator;
 	typedef com::nealrame::utils::buffer::const_iterator<float> const_iterator;
 public:
-	frame (frame &&);
 	frame (unsigned int channel_count, iterator first);
 	frame () = delete;
 public:
@@ -51,7 +51,7 @@ public:
 			error::raise(error::FormatBadChannelCountValue);
 		}
 		::std::for_each(first, last, [&it](const value_type &v) {
-			*it++ = v/::std::numeric_limits<value_type>::max();
+			*it++ = value_to_sample<value_type>(v);
 		});
 	}
 	template<typename Type>
@@ -62,7 +62,7 @@ public:
 		}
 		auto it = first_;
 		::std::for_each(first, last, [&it](const Type & v) {
-			*it++ = v/::std::numeric_limits<Type>::max();
+			*it++ = value_to_sample<Type>(v);
 		});
 	}
 	template<typename OutputIterator>
@@ -70,14 +70,14 @@ public:
 		typedef typename OutputIterator::value_type value_type;
 		auto it = output;
 		::std::for_each(first_, last_, [&it](const float &v) {
-			*it++ = v*std::numeric_limits<value_type>::max();
+			*it++ = sample_to_value<value_type>(v);
 		});
 	}
 	template<typename Type>
 	inline void read (Type *a) {
 		auto it = a;
 		::std::for_each(first_, last_, [&it](const float &v) {
-			*it++ = v*std::numeric_limits<Type>::max();
+			*it++ = sample_to_value<Type>(v);
 		});
 	}
 	template<typename T> frame & operator= (const std::vector<T> &v) {

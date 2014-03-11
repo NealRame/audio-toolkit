@@ -6,12 +6,6 @@
 
 using namespace com::nealrame::audio;
 
-frame::frame(frame &&other) :
-	channel_count(other.channel_count),
-	first_(other.first_),
-	last_(other.last_) {
-}
-
 frame::frame (unsigned int channel_count, iterator first) :
 	channel_count(channel_count),
 	first_(first),

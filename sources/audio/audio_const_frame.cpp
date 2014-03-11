@@ -13,12 +13,6 @@ const_frame::const_frame (const frame &frame) :
 	last_(frame.end()) {
 }
 
-const_frame::const_frame(const_frame &&other) :
-	channel_count(other.channel_count),
-	first_(other.first_),
-	last_(other.last_) {
-}
-
 const_frame::const_frame (unsigned int channel_count, iterator first) :
 	channel_count(channel_count),
 	first_(first),
