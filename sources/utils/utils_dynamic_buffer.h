@@ -85,6 +85,8 @@ public:
 	///
 	/// Return the number of bytes being copied.
 	virtual size_t fill (uint8_t v, size_t length, size_t offset);
+	/// Set this `dynamic_buffer` length
+	void set_length (size_t length) { length_ = length; }
 	// Clear this buffer,  leaving its capacity as is.
 	void clear () { length_ = 0; }
 	/// Push back the given element at the end of this buffer, increasing
