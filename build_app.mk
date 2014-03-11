@@ -1,12 +1,14 @@
 SOURCES      := $(wildcard $(CURDIR)/sources/*.cpp)
-SOURCES      += $(wildcard $(CURDIR)/sources/audio/*.cpp)
 SOURCES      += $(wildcard $(CURDIR)/sources/utils/*.cpp)
+SOURCES      += $(wildcard $(CURDIR)/sources/audio/*.cpp)
+SOURCES      += $(wildcard $(CURDIR)/sources/audio/codecs/*.cpp)
 
 OBJECTS      := $(notdir $(patsubst %.cpp,%.o,$(SOURCES)))
 
 VPATH        := $(CURDIR)/sources
-VPATH        := $(VPATH):$(CURDIR)/sources/audio
 VPATH        := $(VPATH):$(CURDIR)/sources/utils
+VPATH        := $(VPATH):$(CURDIR)/sources/audio
+VPATH        := $(VPATH):$(CURDIR)/sources/audio/codecs
 
 INCLUDE_PATH += -I$(CURDIR)/sources
 
