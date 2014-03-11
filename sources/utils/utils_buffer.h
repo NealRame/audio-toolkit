@@ -51,7 +51,7 @@ public:
 	/// Return the number of bytes being overwritten.
 	virtual size_t fill (uint8_t v, size_t len, size_t off) = 0;
 	/// Get the underlying data of this `buffer`.
-	virtual void * data () final { return length_ > 0 ? data_:nullptr; }
+	virtual void * data () final { return data_; }
 	/// Get the underlying data of this `buffer`.
 	virtual const void * data () const final
 	{ return const_cast<buffer *>(this)->data(); }
@@ -77,7 +77,7 @@ public: // Iterators /////////////////////////////////////////////////////////
 			return ptr_ == other.ptr_;
 		}
 		ptrdiff_t distance_to (base_iterator const &other) const {
-			return ptr_ - other.ptr_;
+			return other.ptr_ - ptr_;
 		}
 		void advance (ptrdiff_t n) {
 			ptr_ += n;
