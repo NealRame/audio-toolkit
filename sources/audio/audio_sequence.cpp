@@ -48,9 +48,9 @@ sequence::iterator sequence::end () {
 }
 
 sequence::const_iterator sequence::begin () const {
-	return const_iterator();
+	return const_cast<sequence *>(this)->begin();
 }
 
 sequence::const_iterator sequence::end () const {
-	return const_iterator();
+	return begin() + frame_count();
 }

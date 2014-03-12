@@ -49,6 +49,7 @@ public:
 	class base_iterator : 
 		public boost::iterator_facade<
 			base_iterator<T>, T, boost::random_access_traversal_tag, T> {
+	friend class sequence;
 	private:
 		friend boost::iterator_core_access;
 		template <class> friend class base_iterator;
@@ -75,17 +76,27 @@ public:
 		void increment () { advance( 1); }
 		void decrement () { advance(-1); }
 	public:
-		base_iterator () : 
+		base_iterator () :
 			channel_count_(0) { }
 		template <typename U>
 		base_iterator (unsigned int channel_count,
 				const frame_ptr<U> &ptr,
-				typename std::enable_if<std::is_convertible<U *, typename T::iterator::value_type *>::value, enabler>::type = enabler()) :
+					typename std::enable_if<
+						std::is_convertible<
+							U &,
+							typename T::iterator::reference
+							>::value, 
+						enabler>::type = enabler()) :
 			channel_count_(channel_count),
 			ptr_(ptr) { }
 		template <typename U>
 		base_iterator (const U &other,
-				typename std::enable_if<std::is_convertible<U *, T *>::value, enabler>::type = enabler()) :
+					typename std::enable_if<
+						std::is_convertible<
+							typename U::value_type::iterator::reference,
+							typename T::iterator::reference
+							>::value,
+						enabler>::type = enabler()) :
 			channel_count_(other.channel_count_),
 			ptr_(other.ptr_) { }
 	};
