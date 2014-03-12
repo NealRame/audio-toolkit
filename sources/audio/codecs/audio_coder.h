@@ -16,7 +16,7 @@
 namespace com {
 namespace nealrame {
 namespace audio {
-class buffer;
+class sequence;
 namespace codec {
 
 class coder {
@@ -39,7 +39,7 @@ public:
 		Default = Good
 	};
 public:
-	static std::shared_ptr<coder> get_coder (const std::string &extension) throw(error);
+	static std::shared_ptr<coder> get (const std::string &extension) throw(error);
 public:
 	/// Initialize a coder with default quality.
 	/// See section **Encoding quality**.
@@ -55,10 +55,10 @@ public:
 	void set_quality(enum quality);
 	/// Encode the given buffer to the given filename.
 	/// See `buffer` documentation for more details about `buffer`.
-	virtual void encode(const buffer &, const std::string &) const throw(error);
+	virtual void encode(const std::string &, const sequence &) const throw(error);
 	/// Encode the given buffer to the given output stream.
 	/// See `buffer` documentation for more details about `buffer`.
-	virtual void encode(const buffer &, std::ofstream &) const throw(error) = 0;
+	virtual void encode(std::ofstream &, const sequence &) const throw(error) = 0;
 private:
 	enum quality quality_;
 };

@@ -20,7 +20,7 @@ class buffer;
 namespace codec {
 class decoder {
 public:
-	static std::shared_ptr<decoder> get_decoder (const std::string &extension) throw(error);
+	static std::shared_ptr<decoder> get (const std::string &extension) throw(error);
 public:
 	virtual ~decoder () {}
 public:

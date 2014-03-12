@@ -6,18 +6,19 @@
  */
 #include <boost/algorithm/string.hpp>
 #include "audio_coder.h"
+#include "audio_pcm_coder.h"
 
 namespace com {
 namespace nealrame {
 namespace audio {
 namespace codec {
 
-std::shared_ptr<coder> coder::get_coder (const std::string &extension) 
+std::shared_ptr<coder> coder::get (const std::string &extension) 
 		throw(error) {
 	std::shared_ptr<coder> coder;
 	std::string ext = boost::to_lower_copy(extension);
 	if (ext == ".wav") {
-		coder = nullptr;
+		coder = std::make_shared<PCM_coder>();
 	} else {
 		error::raise(audio::error::status::CodecNoSuitableCoderFound);
 	}
@@ -33,11 +34,12 @@ coder::coder () :
 }
 
 void coder::encode (
-		const com::nealrame::audio::buffer &buffer,
-		const std::string &filename) const throw(error) {
+	const std::string &filename,
+	const com::nealrame::audio::sequence &sequence) 
+	const throw(error) {
 	std::ofstream ofs(filename.data(), std::ofstream::binary);
 	try {
-		encode(buffer, ofs);
+		encode(ofs, sequence);
 		ofs.close();
 	} catch (com::nealrame::audio::error &e) {
 		ofs.close();

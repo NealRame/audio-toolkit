@@ -17,7 +17,7 @@ namespace nealrame {
 namespace audio {
 namespace codec {
 
-std::shared_ptr<decoder> decoder::get_decoder (const std::string &extension) throw(error) {
+std::shared_ptr<decoder> decoder::get (const std::string &extension) throw(error) {
 	std::shared_ptr<decoder> decoder;
 	std::string ext = boost::to_lower_copy(extension);
 	if (ext == ".wav") {
