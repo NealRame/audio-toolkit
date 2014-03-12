@@ -40,14 +40,13 @@ public:
 	template<typename OutputIterator>
 	inline void read (OutputIterator output) {
 		typedef typename OutputIterator::value_type value_type;
-		auto it = output;
-		::std::for_each(first_, last_, [&it](const float &v) {
-			*it++ = sample_to_value<value_type>(v);
+		::std::for_each(first_, last_, [&output](const float &v) {
+			*output++ = sample_to_value<value_type>(v);
 		});
 	}
 	template<typename Type>
-	inline void read (Type *a) {
-		auto it = a;
+	inline void read (Type *output) {
+		auto it = output;
 		::std::for_each(first_, last_, [&it](const float &v) {
 			*it++ = sample_to_value<Type>(v);
 		});
