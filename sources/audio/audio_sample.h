@@ -45,12 +45,12 @@ inline uint8_t sample_to_value (float sample) {
 }
 
 template<>
-inline int16_t sample_to_value (float sample) {
+inline uint16_t sample_to_value (float sample) {
 	return static_cast<int16_t>(sample_to_value<int16_t>(sample));
 }
 
 template<>
-inline int32_t sample_to_value (float sample) {
+inline uint32_t sample_to_value (float sample) {
 	return static_cast<int32_t>(sample_to_value<int32_t>(sample));
 }
 
