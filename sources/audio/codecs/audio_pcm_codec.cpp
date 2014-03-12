@@ -18,6 +18,7 @@
 #include "audio_pcm_decoder.h"
 
 using namespace com::nealrame;
+using com::nealrame::audio::codec::PCM_coder;
 using com::nealrame::audio::codec::PCM_decoder;
 
 struct RIFFHeaderChunk {
@@ -137,7 +138,7 @@ inline void read (std::ifstream &in, utils::dynamic_buffer &buffer) {
 	}
 }
 
-template<typename T>
+template <typename T>
 inline void fill_audio_buffer (
 	utils::buffer &data, audio::sequence sequence, 
 	unsigned int count, unsigned int offset)  {
@@ -235,52 +236,99 @@ PCM_decoder::decode(std::ifstream &in) const throw(audio::error) {
 // Coder /////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-// struct RAII_PCMCoderData {
-// 	std::ofstream &output;
-// 	std::ofstream::iostate output_state;
+template <typename T>
+inline void write (std::ofstream &out, const audio::sequence &sequence);
 
-// 	RAII_PCMCoderData(std::ofstream &out) :
-// 		output(out) {
-// 		output_state = output.exceptions();
-// 		output.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-// 	}
+template <>
+inline void write<RIFFHeaderChunk> (std::ofstream &out, const audio::sequence &seq) {
+	audio::format format = seq.format();
 
-// 	virtual ~RAII_PCMCoderData() {
-// 		output.exceptions(output_state);
-// 	}
-// };
+	unsigned int frame_count = seq.frame_count();
+	unsigned int channel_count = format.channel_count();
 
-// void PCMCoder::encode(const Buffer &buffer, std::ofstream &out) const {
-// 	RIFFHeaderChunk header_chunk;
+	RIFFHeaderChunk chunk;
 
-// 	try {
-// 		Format fmt = buffer.format();
+	memcpy(chunk.id,     "RIFF", 4);
+	memcpy(chunk.format, "WAVE", 4);
+	chunk.size = 4
+		+ sizeof(WaveFormatChunk)
+		+ sizeof(WaveDataChunk)
+		+ (frame_count*channel_count*sizeof(int16_t));
 
-// 		memcpy(header_chunk.id,     "RIFF", 4);
-// 		memcpy(header_chunk.format, "WAVE", 4);
-// 		header_chunk.size = 4 + sizeof(WaveFormatChunk) + sizeof(WaveDataChunk) + fmt.sizeForFrameCount(buffer.frameCount());
-// 		debug_riff_header_chunk(header_chunk);
-// 		out.write((const char *)&header_chunk, sizeof(RIFFHeaderChunk));
+	debug_riff_header_chunk(chunk);
 
-// 		WaveFormatChunk wave_format;
-// 		memcpy(wave_format.id, "fmt ", 4);
-// 		wave_format.size = sizeof(WaveFormatChunk) - sizeof(wave_format.id) - sizeof(wave_format.size);
-// 		wave_format.audioFormat = 1;
-// 		wave_format.channelCount = fmt.channelCount();
-// 		wave_format.sampleRate = fmt.sampleRate();
-// 		wave_format.byteRate = fmt.sizeForFrameCount(fmt.sampleRate());
-// 		wave_format.bytePerFrame = fmt.sizeForFrameCount(1);
-// 		wave_format.bitPerSample = fmt.bitDepth();
-// 		debug_wave_format_chunk(wave_format);
-// 		out.write((const char *)&wave_format, sizeof(WaveFormatChunk));
+	out.write(reinterpret_cast<char *>(&chunk), sizeof(RIFFHeaderChunk));
+}
 
-// 		WaveDataChunk wave_data;
-// 		memcpy(wave_data.id, "data", 4);
-// 		wave_data.size = fmt.sizeForFrameCount(buffer.frameCount());
-// 		debug_wave_data_chunk(wave_data);
-// 		out.write((const char *)&wave_data, sizeof(WaveDataChunk));
-// 		out.write((const char *)buffer.data(), fmt.sizeForFrameCount(buffer.frameCount()));
-// 	} catch (std::ofstream::failure ioerr) {
-// 		Error::raise(Error::Status::IOError, ioerr.what());
-// 	}
-// }
+template <>
+inline void write<WaveFormatChunk> (std::ofstream &out, const audio::sequence &seq) {
+	audio::format format = seq.format();
+
+	unsigned int channel_count = format.channel_count();
+	unsigned int sample_rate = format.sample_rate();
+
+	WaveFormatChunk chunk;
+	memcpy(chunk.id, "fmt ", 4);
+	chunk.size = sizeof(WaveFormatChunk) 
+		- sizeof(chunk.id)
+		- sizeof(chunk.size);
+	chunk.audioFormat = 1;
+	chunk.channelCount = channel_count;
+	chunk.sampleRate = sample_rate;
+	chunk.byteRate = channel_count*sample_rate*sizeof(int16_t);
+	chunk.bytePerFrame = channel_count*sizeof(int16_t);
+	chunk.bitPerSample = 8*sizeof(int16_t);
+
+	debug_wave_format_chunk(chunk);
+
+	out.write(reinterpret_cast<char *>(&chunk), sizeof(WaveFormatChunk));
+}
+
+template <>
+inline void write<WaveDataChunk> (std::ofstream &out, const audio::sequence &seq) {
+	audio::format format = seq.format();
+
+	unsigned int frame_count = seq.frame_count();
+	unsigned int channel_count = format.channel_count();
+#if defined (DEBUG)
+	unsigned int frame_index = 0;
+#endif
+
+	WaveDataChunk chunk;
+	memcpy(chunk.id, "data", 4);
+	chunk.size = frame_count*channel_count*sizeof(int16_t);
+
+	debug_wave_data_chunk(chunk);
+
+	out.write(reinterpret_cast<char *>(&chunk), sizeof(WaveFormatChunk));
+
+	for (auto frame: seq) {
+#if defined (DEBUG)
+		std::cerr << "frame[" << frame_index++ << "]: ";
+#endif
+		// I wish i could use an input iterator here ...
+		for (float sample: frame) {
+			int16_t value = audio::sample_to_value<int16_t>(sample);
+#if defined (DEBUG)
+			std::cerr << sample << ":" << value << ' ';
+#endif
+			out.write(reinterpret_cast<char *>(&value), sizeof(value));
+		}
+#if defined (DEBUG)
+		std::cerr << std::endl;
+#endif
+	}
+}
+
+void PCM_coder::encode(std::ofstream &out, const audio::sequence &sequence)
+		const throw(error) {
+	out.exceptions(std::ofstream::failbit|std::ofstream::badbit);
+
+	try {
+		write<RIFFHeaderChunk>(out, sequence);
+		write<WaveFormatChunk>(out, sequence);
+		write<WaveDataChunk>  (out, sequence);
+	} catch (std::ofstream::failure ioerr) {
+		error::raise(error::status::CodecIOError, ioerr.what());
+	}
+}

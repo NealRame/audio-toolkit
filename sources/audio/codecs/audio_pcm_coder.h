@@ -16,7 +16,7 @@ namespace codec {
 class PCM_coder : public coder {
 public:
 	using coder::encode;
-	virtual void encode(const buffer &, std::ofstream &) const throw(error);
+	virtual void encode(std::ofstream &, const audio::sequence &) const throw(error);
 };
 
 } /* namespace codec */
