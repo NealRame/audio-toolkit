@@ -1,3 +1,9 @@
+/*
+ * audio_sample.h
+ *
+ * Created on: March 11, 2014
+ *     Author: [NealRame](mailto:contact@nealrame.com)
+ */
 #ifndef AUDIO_SAMPLE_H_
 #define AUDIO_SAMPLE_H_
 

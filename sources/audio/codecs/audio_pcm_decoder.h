@@ -1,4 +1,4 @@
-/**
+/*
  * audio_pcm_decoder.h
  *
  * Created on: March 09, 2014

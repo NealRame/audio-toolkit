@@ -1,4 +1,4 @@
-/**
+/*
  * audio_pcm_coder.h
  *
  * Created on: March 09, 2014
@@ -18,7 +18,6 @@ public:
 	using coder::encode;
 	virtual void encode(std::ofstream &, const audio::sequence &) const throw(error);
 };
-
 } /* namespace codec */
 } /* namespace audio */
 } /* namespace nealrame */

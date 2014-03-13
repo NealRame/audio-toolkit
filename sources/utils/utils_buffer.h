@@ -1,5 +1,11 @@
-#ifndef UTILS_ABSTRACTBUFFER_H_
-#define UTILS_ABSTRACTBUFFER_H_
+/*
+ * audio_buffer.h
+ *
+ * Created on: March 08, 2014
+ *     Author: [NealRame](mailto:contact@nealrame.com)
+ */
+#ifndef UTILS_BUFFER_H_
+#define UTILS_BUFFER_H_
 
 #include <cstdint>
 #include <cstring>

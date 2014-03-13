@@ -1,3 +1,9 @@
+/*
+ * audio_const_frame.h
+ *
+ * Created on: March 08, 2014
+ *     Author: [NealRame](mailto:contact@nealrame.com)
+ */
 #ifndef AUDIO_CONST_FRAME_H_
 #define AUDIO_CONST_FRAME_H_
 
@@ -15,7 +21,7 @@ namespace com {
 namespace nealrame {
 namespace audio {
 class frame;
-/// com::nealrame::audio::buffer
+/// com::nealrame::audio::const_frame
 /// 
 /// The `buffer` class provides representation of an audio buffer. It is 
 /// nothing more than a sample container with an assign format descriptor.
@@ -30,13 +36,20 @@ public:
 public:
 	size_t size () const { return channel_count*sizeof(float); }
 public:
-	iterator begin () { return first_; }
-	iterator end () { return last_; }
-	iterator begin () const { return first_; }
-	iterator end () const { return last_; }
-	iterator cbegin () const { return begin(); }
-	iterator cend () const { return end(); }
+	/// Return an const_iterator on the begining of this `const_frame`.
+	const_iterator begin () { return first_; }
+	/// Return an const_iterator on the end of this `const_frame`.
+	const_iterator end () { return last_; }
+	/// Return an const_iterator on the begining of this `const_frame`.
+	const_iterator begin () const { return first_; }
+	/// Return an const_iterator on the end of this `const_frame`.
+	const_iterator end () const { return last_; }
+	/// Return an const_iterator on the begining of this `const_frame`.
+	const_iterator cbegin () const { return begin(); }
+	/// Return an const_iterator on the end of this `const_frame`.
+	const_iterator cend () const { return end(); }
 public:
+	/// Output this this `frame` samples to the given `OutputIterator`.
 	template<typename OutputIterator>
 	inline void read (OutputIterator output) {
 		typedef typename OutputIterator::value_type value_type;
@@ -44,6 +57,7 @@ public:
 			*output++ = sample_to_value<value_type>(v);
 		});
 	}
+	/// Output this `frame` samples to the given `Pointer` sequence.
 	template<typename Type>
 	inline void read (Type *output) {
 		auto it = output;
@@ -54,8 +68,8 @@ public:
 public:
 	const unsigned int channel_count;
 private:
-	iterator first_;
-	iterator last_;
+	const_iterator first_;
+	const_iterator last_;
 };
 
 template<>

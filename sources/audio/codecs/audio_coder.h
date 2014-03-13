@@ -1,4 +1,4 @@
-/**
+/*
  * audio_coder.h
  *
  * Created on: March 09, 2014

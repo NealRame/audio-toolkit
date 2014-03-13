@@ -1,3 +1,9 @@
+/*
+ * audio_buffer.h
+ *
+ * Created on: March 08, 2014
+ *     Author: [NealRame](mailto:contact@nealrame.com)
+ */
 #ifndef AUDIO_BUFFER_H_
 #define AUDIO_BUFFER_H_
 
@@ -21,16 +27,20 @@ namespace audio {
 /// You can enlarge or reduce it as you want to.
 class buffer {
 public:
-	typedef sequence::size_type size_type;
-public:
 	buffer () = delete;
+	/// Initialize an empty `buffer` given an audio `format`. 
 	explicit buffer (class format);
+	/// Initialize a `buffer` given an audio `format` and a number of frame. 
 	buffer (class format, unsigned int frame_count);
+	/// Initialize a `buffer` given an audio `format` and a duration.
 	buffer (class format, double duration);
 	virtual ~buffer ();
 public:
+	/// Return the audio `format` of this `buffer`.
 	class format format () const;
+	/// Return the duration of this `buffer`.
 	double duration () const;
+	/// Return the number of frames of this `buffer`.
 	unsigned int frame_count () const;
 public:
 	/// Add some frames to the end of this `buffer` to increase its
@@ -70,7 +80,7 @@ public:
 	/// to zero.
 	void set_frame_count (unsigned int frame_count, bool clear = false);
 public:
-	/// Return a reference on the raw data buffer of this `dynamic_buffer`
+	/// Return a reference on the raw data buffer of this `dynamic_buffer`.
 	com::nealrame::utils::buffer & raw_buffer ();
 	/// Return a constant reference on the raw data buffer of this
 	/// `dynamic_buffer`.

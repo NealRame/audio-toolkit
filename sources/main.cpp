@@ -10,11 +10,6 @@
 
 #include <audio/codec>
 
-#include <fstream>
-#include <stdio.h>
-
-#include <type_traits>
-
 using namespace com::nealrame;
 
 int main(int argc, char **argv) {
@@ -27,4 +22,3 @@ int main(int argc, char **argv) {
 	
 	return 0;
 }
-

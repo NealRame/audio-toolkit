@@ -1,3 +1,9 @@
+/*
+ * audio_dynamic_buffer.h
+ *
+ * Created on: March 08, 2014
+ *     Author: [NealRame](mailto:contact@nealrame.com)
+ */
 #ifndef UTILS_DYNAMIC_BUFFER_H_
 #define UTILS_DYNAMIC_BUFFER_H_
 

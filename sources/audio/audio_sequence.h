@@ -1,3 +1,9 @@
+/*
+ * audio_sequence.h
+ *
+ * Created on: March 08, 2014
+ *     Author: [NealRame](mailto:contact@nealrame.com)
+ */
 #ifndef AUDIO_SEQUENCE_H_
 #define AUDIO_SEQUENCE_H_
 
@@ -22,25 +28,41 @@ public:
 	typedef size_t size_type;
 public:
 	sequence () = delete;
+	/// Initialize an audio `sequence` with the specified format and a 
+	/// given data `utils::buffer`.
 	sequence (const class format &format, com::nealrame::utils::buffer &);
 	sequence (sequence &&);
 	virtual ~sequence ();
 public:
+	/// Return the audio `format` of this audio `sequence`.
 	virtual class format format () const;
+	/// Return the duration of this `sequence`.
 	virtual double duration () const;
+	/// Return the number of frame of this audio `sequence`.
 	virtual unsigned int frame_count () const;
+	/// Return the memory footprint of this audio `sequence`.
 	virtual size_t size () const;
 public:
+	/// Return a reference on the raw data buffer of this `sequence`.
+	com::nealrame::utils::buffer & raw_buffer () {
+		return raw_buffer_;
+	}
+	/// Return a constant reference on the raw data buffer of this 
+	/// `sequence`.
 	const com::nealrame::utils::buffer & raw_buffer () const {
 		return raw_buffer_;
 	}
 public:
+	/// Return the `frame` af the given index.
 	virtual frame frame_at (size_type frame_index);
+	/// Return the `const_frame` af the given index.
 	virtual const_frame frame_at (size_type frame_index) const;
 public:
+	/// Return the `frame` af the given index.
 	virtual frame operator[] (size_type frame_index) {
 		return frame_at(frame_index);
 	}
+	/// Return the `const_frame` af the given index.
 	virtual const_frame operator[] (size_type frame_index) const {
 		return frame_at(frame_index);
 	}
@@ -103,11 +125,17 @@ public:
 	using iterator = base_iterator<frame>;
 	using const_iterator = base_iterator<const_frame>;
 public:
+	/// Return an iterator on the first `frame` of this `sequence`.
 	virtual iterator begin ();
+	/// Return an iterator on the end of this `sequence`.
 	virtual iterator end ();
+	/// Return an const_iterator on the first `frame` of this `sequence`.
 	virtual const_iterator begin () const;
+	/// Return an iterator on the end of this `sequence`.
 	virtual const_iterator end () const;
+	/// Return an const_iterator on the first `frame` of this `sequence`.
 	virtual const_iterator cbegin () const final { return begin(); }
+	/// Return an iterator on the end of this `sequence`.
 	virtual const_iterator cend () const final { return end(); }
 private:
 	class format format_;
