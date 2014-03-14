@@ -1,3 +1,6 @@
 #include "audio/audio_generator.h"
 #include "audio/audio_generator_engine_noise.h"
 #include "audio/audio_generator_engine_sine.h"
+#include "audio/audio_generator_engine_square.h"
+#include "audio/audio_generator_engine_sawtooth.h"
+#include "audio/audio_generator_engine_triangle.h"
