@@ -1,5 +1,5 @@
 /*
- * audio_error.h
+ * audio_generator.h
  *
  * Created on: March 08, 2014
  *     Author: [NealRame](mailto:contact@nealrame.com)
@@ -27,6 +27,7 @@ public:
 		engine_(fmt, std::forward<Args>(args)...) {
 	}
 public:
+	void reset () { engine_.reset(); }
 	const_frame frame () {
 		return engine_.frame();
 	}
