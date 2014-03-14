@@ -1,0 +1,3 @@
+#include "audio/audio_generator.h"
+#include "audio/audio_generator_engine_noise.h"
+#include "audio/audio_generator_engine_sine.h"
