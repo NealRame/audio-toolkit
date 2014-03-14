@@ -123,13 +123,6 @@ public:
 		write<std::initializer_list<T>>(v);
 		return *this;
 	}
-	/// Affect sample picked from the given `frame` to this `frame`.
-	/// Raise an `error::FormatBadChannelCountValue` if this `frame` and 
-	/// the given one don't have the same number of samples.
-	frame & operator= (const frame &other) {
-		write(other.begin(), other.end());
-		return *this;
-	}
 	/// Affect sample picked from the given `const_rame` to this `frame`.
 	/// Raise an `error::FormatBadChannelCountValue` if this `frame` and 
 	/// the given `const_frame` don't have the same number of samples.
