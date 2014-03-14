@@ -18,7 +18,7 @@ struct sawtooth::impl {
 		buffer(format, 1u) {
 	}
 	class buffer buffer;
-	float two_frequency;
+	float frequency;
 	float step;
 };
 
@@ -27,7 +27,7 @@ sawtooth::sawtooth (class format fmt, float amplitude, float frequency) :
 	amplitude(std::fmin(amplitude, 1.)),
 	t(0),
 	pimpl_(new impl(fmt)) {
-	pimpl_->two_frequency = 2*frequency;
+	pimpl_->frequency = frequency;
 	pimpl_->step = 1./fmt.sample_rate();
 }
 
@@ -37,8 +37,8 @@ sawtooth::~sawtooth () {
 const_frame sawtooth::frame () {
 	class frame f = pimpl_->buffer.sequence().frame_at(0);
 
-	float floor_part = floor(t*pimpl_->two_frequency + 0.5);
-	float s = 2*amplitude*(t*pimpl_->two_frequency - floor_part);
+	float floor_part = floor(t*pimpl_->frequency + 0.5);
+	float s = 2*amplitude*(t*pimpl_->frequency - floor_part);
 
 	for (float &sample: f) {
 		sample = s;
