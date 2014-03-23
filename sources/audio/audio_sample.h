@@ -8,6 +8,7 @@
 #define AUDIO_SAMPLE_H_
 
 #include <cstdint>
+#include <cmath>
 #include <limits>
 
 namespace com {
@@ -16,7 +17,22 @@ namespace audio {
 
 template<typename T>
 inline float value_to_sample (T v) {
-	return static_cast<float>(v)/::std::numeric_limits<T>::max();
+	float max =
+		std::fmax(
+			std::fabs(std::numeric_limits<T>::min()),
+			std::numeric_limits<T>::max());
+
+	float f = static_cast<float>(v)/max;
+
+	if (f > 1) {
+		return 1.f;
+	}
+
+	if (f < -1) {
+		return -1.f;
+	}
+
+	return f;
 }
 
 template<>
@@ -41,8 +57,22 @@ inline float value_to_sample<float> (float v) {
 
 template<typename T>
 inline T sample_to_value (float sample) {
-	return static_cast<T>(
-		sample*::std::numeric_limits<T>::max());
+	float max =
+		std::fmax(
+			std::fabs(std::numeric_limits<T>::min()),
+			std::numeric_limits<T>::max());
+
+	sample = sample*max;
+
+	if (sample > std::numeric_limits<T>::max()) {
+		return std::numeric_limits<T>::max();
+	}
+
+	if (sample < std::numeric_limits<T>::min()) {
+		return std::numeric_limits<T>::min();
+	}
+
+	return sample;
 }
 
 template<>
