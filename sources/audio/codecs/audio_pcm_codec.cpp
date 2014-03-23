@@ -43,7 +43,7 @@ struct WaveDataChunk {
 	uint32_t size;
 } __attribute__((packed));
 
-#if defined (DEBUG)
+#if defined (DEBUG) && defined(DEBUG_PCM_CODEC)
 
 template<int N>
 void debug_array_of_char(char array[N]) {
@@ -143,7 +143,7 @@ inline void fill_audio_buffer (
 	utils::buffer &data, audio::sequence sequence, 
 	unsigned int count, unsigned int offset)  {
 
-#if defined (DEBUG)
+#if defined (DEBUG) && defined(DEBUG_PCM_CODEC)
 	std::cerr << "Fill audio buffer with " << count << " frames" << std::endl;
 #endif
 
@@ -179,7 +179,7 @@ PCM_decoder::decode(std::ifstream &in) const throw(audio::error) {
 
 		utils::dynamic_buffer buffer;
 
-#if defined (DEBUG)
+#if defined (DEBUG) && defined(DEBUG_PCM_CODEC)
 		std::cerr << "---" << std::endl;
 		std::cerr << "Frame count " << remaining_frames << std::endl;
 		std::cerr << "Audio buffer length " << audio_buffer->raw_buffer().length() << std::endl;
@@ -190,7 +190,7 @@ PCM_decoder::decode(std::ifstream &in) const throw(audio::error) {
 			unsigned int frame_count =
 				std::min<unsigned int>(1024, remaining_frames);
 
-#if defined (DEBUG)
+#if defined (DEBUG) && defined(DEBUG_PCM_CODEC)
 			std::cerr << "---" << std::endl;
 			std::cerr << "Buffer length " << buffer.length() << std::endl;
 			std::cerr << "Read " << frame_count << " frames" << std::endl;
@@ -199,7 +199,7 @@ PCM_decoder::decode(std::ifstream &in) const throw(audio::error) {
 			buffer.reserve(format_chunk.bytePerFrame*frame_count);
 			read(in, buffer);
 
-#if defined (DEBUG)
+#if defined (DEBUG) && defined(DEBUG_PCM_CODEC)
 			std::cerr << "Buffer length " << buffer.length() << std::endl;
 			std::cerr << "---" << std::endl;
 #endif
@@ -290,7 +290,7 @@ inline void write<WaveDataChunk> (std::ofstream &out, const audio::sequence &seq
 
 	unsigned int frame_count = seq.frame_count();
 	unsigned int channel_count = format.channel_count();
-#if defined (DEBUG)
+#if defined (DEBUG) && defined(DEBUG_PCM_CODEC)
 	unsigned int frame_index = 0;
 #endif
 
@@ -300,21 +300,21 @@ inline void write<WaveDataChunk> (std::ofstream &out, const audio::sequence &seq
 
 	debug_wave_data_chunk(chunk);
 
-	out.write(reinterpret_cast<char *>(&chunk), sizeof(WaveFormatChunk));
+	out.write(reinterpret_cast<char *>(&chunk), sizeof(WaveDataChunk));
 
 	for (auto frame: seq) {
-#if defined (DEBUG)
+#if defined (DEBUG) && defined(DEBUG_PCM_CODEC)
 		std::cerr << "frame[" << frame_index++ << "]: ";
 #endif
 		// I wish i could use an input iterator here ...
 		for (float sample: frame) {
 			int16_t value = audio::sample_to_value<int16_t>(sample);
-#if defined (DEBUG)
+#if defined (DEBUG) && defined(DEBUG_PCM_CODEC)
 			std::cerr << sample << ":" << value << ' ';
 #endif
 			out.write(reinterpret_cast<char *>(&value), sizeof(value));
 		}
-#if defined (DEBUG)
+#if defined (DEBUG) && defined(DEBUG_PCM_CODEC)
 		std::cerr << std::endl;
 #endif
 	}
