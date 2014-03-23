@@ -91,6 +91,18 @@ public:
 	///
 	/// Return the number of bytes being copied.
 	virtual size_t fill (uint8_t v, size_t length, size_t offset);
+	/// Try to store in this `dynamic_buffer` starting at the given `offset` 
+	/// at most `len` bytes read from the given input stream `in`.
+	///
+	/// Set this buffer length with the effective count of bytes read.
+	/// Return the number of bytes read.
+	virtual size_t fill (std::istream &in, size_t len, size_t offset = 0);
+	/// Try to fill this `dynamic_buffer` starting at the given `offset` 
+	/// with ` bytes read from the given input stream `in`.
+	///
+	/// Set this buffer length with the effective count of bytes read.
+	/// Return the number of bytes read.
+	virtual size_t fill (std::istream &in, size_t offset = 0);
 	/// Set this `dynamic_buffer` length
 	void set_length (size_t length) { length_ = length; }
 	// Clear this buffer,  leaving its capacity as is.
@@ -135,6 +147,8 @@ public:
 	static_buffer slice(size_t begin, size_t end);
 public:
 	void swap (dynamic_buffer &);
+private:
+	size_t capacity_;
 };
 } // namespace utils
 } // namespace nealrame

@@ -174,7 +174,6 @@ public: // Iterators /////////////////////////////////////////////////////////
 		return rend<T>();
 	}
 protected:
-	size_t capacity_;
 	size_t length_;
 	void *data_;
 };

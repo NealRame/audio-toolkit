@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstring>
+#include <fstream>
 
 #include "utils_dynamic_buffer.h"
 
@@ -85,6 +86,26 @@ size_t dynamic_buffer::fill (uint8_t value, size_t count, size_t offset) {
 	memset(static_cast<uint8_t *>(data_) + offset, value, count);
 	length_ = std::max(length_, offset + count);
 	return count;
+}
+
+size_t dynamic_buffer::fill (std::istream &in, size_t count, size_t offset) {
+	if ((offset + count) > capacity_) {
+		reserve(offset + count);
+	}
+	in.read(static_cast<char *>(data_) + offset, count);
+	size_t n = in.gcount();
+	length_ = std::max(length_, offset + n);
+	return n;
+}
+
+size_t dynamic_buffer::fill (std::istream &in, size_t offset) {
+	size_t n = 0;
+	if (offset < capacity_) {
+		in.read(static_cast<char *>(data_), capacity_ - offset);
+		n = in.gcount();
+		length_ = std::max(length_, offset + n);
+	}
+	return n;
 }
 
 void dynamic_buffer::append (const void *data, size_t length) {
