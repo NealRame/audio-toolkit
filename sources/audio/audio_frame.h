@@ -30,6 +30,7 @@ namespace audio {
 /// audio frame.
 class frame {
 public:
+	typedef size_t size_type;
 	typedef com::nealrame::utils::buffer::iterator<float> iterator;
 	typedef com::nealrame::utils::buffer::const_iterator<float> const_iterator;
 public:
@@ -39,6 +40,12 @@ public:
 	/// Return the memory footprint of this `frame`.
 	size_t size () const { return channel_count*sizeof(float); }
 public:
+	/// Return the sample at the given channel index
+	float & sample_at(size_type index) 
+	{ return *(begin() + index); }
+	/// Return the sample at the given channel index
+	const float & sample_at(size_type index) const 
+	{ return const_cast<frame *>(this)->sample_at(index); }
 	/// Return an iterator on the begining of this `frame`.
 	iterator begin () { return first_; }
 	/// Return an iterator on the end of this `frame`.

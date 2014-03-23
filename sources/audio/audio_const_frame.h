@@ -27,6 +27,7 @@ class frame;
 /// nothing more than a sample container with an assign format descriptor.
 class const_frame {
 public:
+	typedef size_t size_type;
 	typedef com::nealrame::utils::buffer::const_iterator<float> iterator;
 	typedef iterator const_iterator;
 public:
@@ -36,6 +37,12 @@ public:
 public:
 	size_t size () const { return channel_count*sizeof(float); }
 public:
+	/// Return the sample at the given channel index
+	const float & sample_at(size_type index) 
+	{ return *(begin() + index); }
+	/// Return the sample at the given channel index
+	const float & sample_at(size_type index) const
+	{ return const_cast<const_frame *>(this)->sample_at(index); }
 	/// Return an const_iterator on the begining of this `const_frame`.
 	const_iterator begin () { return first_; }
 	/// Return an const_iterator on the end of this `const_frame`.
@@ -66,6 +73,7 @@ public:
 		});
 	}
 public:
+	/// The number of channel this `const_frame` contains.
 	const unsigned int channel_count;
 private:
 	const_iterator first_;
