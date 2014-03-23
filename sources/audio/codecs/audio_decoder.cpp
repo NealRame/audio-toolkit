@@ -6,6 +6,7 @@
  */
 #include <boost/algorithm/string.hpp>
 #include "audio_decoder.h"
+#include "audio_mp3_decoder.h"
 #include "audio_pcm_decoder.h"
 
 // #include "audio_MP3_decoder.h"
@@ -20,12 +21,16 @@ namespace codec {
 std::shared_ptr<decoder> decoder::get (const std::string &extension) throw(error) {
 	std::shared_ptr<decoder> decoder;
 	std::string ext = boost::to_lower_copy(extension);
+
 	if (ext == ".wav") {
-		decoder = std::make_shared<PCM_decoder>();
-	} else {
-		error::raise(audio::error::status::CodecNoSuitableDecoderFound);
+		return std::make_shared<PCM_decoder>();
+	} 
+
+	if (ext == ".mp3") {
+		return std::make_shared<MP3_decoder>();
 	}
-	return decoder;
+
+	throw error{error::CodecNoSuitableDecoderFound};
 }
 
 std::shared_ptr<audio::buffer> decoder::decode(const std::string &filename) const throw(error) {

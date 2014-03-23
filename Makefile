@@ -4,6 +4,7 @@ CXX           = clang++
 COMMON_FLAGS  = -Wall -Werror -I$(CURDIR)/vendors/utf8
 CFLAGS        = $(COMMON_FLAGS)
 CXXFLAGS      = -std=c++11 $(COMMON_FLAGS)
+LFLAGS        = -lmpg123
 DEPS         := $(CURDIR)/Makefile.depends
 
 export

@@ -6,6 +6,7 @@
  */
 #include <boost/algorithm/string.hpp>
 #include "audio_coder.h"
+#include "audio_mp3_coder.h"
 #include "audio_pcm_coder.h"
 
 namespace com {
@@ -15,14 +16,17 @@ namespace codec {
 
 std::shared_ptr<coder> coder::get (const std::string &extension) 
 		throw(error) {
-	std::shared_ptr<coder> coder;
 	std::string ext = boost::to_lower_copy(extension);
+	
 	if (ext == ".wav") {
-		coder = std::make_shared<PCM_coder>();
-	} else {
-		error::raise(audio::error::status::CodecNoSuitableCoderFound);
+		return std::make_shared<PCM_coder>();
 	}
-	return coder;
+
+	if (ext == ".mp3") {
+		return std::make_shared<MP3_coder>();
+	}
+
+	throw error{audio::error::status::CodecNoSuitableCoderFound};
 }
 
 coder::coder (enum quality quality) :
