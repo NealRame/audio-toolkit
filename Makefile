@@ -5,10 +5,10 @@ COMMON_FLAGS  = -Wall -Werror
 CFLAGS        = $(COMMON_FLAGS)
 CXXFLAGS      = -std=c++11 $(COMMON_FLAGS)
 
-SOURCES      := $(wildcard $(CURDIR)/sources/*.cpp)
-SOURCES      += $(wildcard $(CURDIR)/sources/utils/*.cpp)
+SOURCES      := $(wildcard $(CURDIR)/sources/*.cc)
+SOURCES      += $(wildcard $(CURDIR)/sources/utils/*.cc)
 
-OBJECTS      := $(notdir $(patsubst %.cpp,%.o,$(SOURCES)))
+OBJECTS      := $(notdir $(patsubst %.cc,%.o,$(SOURCES)))
 
 VPATH        := $(CURDIR)/sources
 VPATH        := $(VPATH):$(CURDIR)/sources/utils
