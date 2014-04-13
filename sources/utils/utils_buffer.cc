@@ -52,8 +52,7 @@ buffer::~buffer () {
 
 buffer & buffer::operator= (const buffer &other) {
 	std::cerr << "copy assignment!" << std::endl;
-	capacity_ = size_ = other.size_;
-	reserve(capacity_);
+	reserve(other.size_);
 	memcpy(data_, other.data_, size_);
 	return *this;
 }
@@ -69,24 +68,21 @@ buffer & buffer::operator= (buffer &&other) {
 }
 
 void buffer::reserve (size_t new_cap) {
-	capacity_ = new_cap;
-	size_ = std::min(size_, capacity_);
-	if (capacity_ > 0) {
+	if (new_cap > capacity_) {
+		capacity_ = new_cap;
 		data_ = realloc(data_, capacity_);
-	} else if (data_ != nullptr) {
-		free(data_);
-		data_ = nullptr;
 	}
 }
 
 void buffer::shrink_to_fit () {
-	reserve(size_);
+	if (data_ != nullptr) {
+		capacity_ = size_;
+		data_ = realloc(data_, capacity_);
+	}
 }
 
 void buffer::resize (size_t size) {
-	if (size > capacity_) {
-		reserve(size);
-	}
+	reserve(size);
 	size_ = size;
 }
 

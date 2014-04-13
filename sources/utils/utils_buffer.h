@@ -10,29 +10,6 @@ namespace nealrame {
 namespace utils {
 class buffer {
 public:
-	template <typename T> using iterator = T *;
-	template <typename T>
-		using const_iterator
-			= typename std::remove_const<T>::type *;
-public:
-	template <typename Iterator>
-	struct base_slice {
-		Iterator first;
-		Iterator last;
-		size_t count () const {
-			return last - first;
-		}
-		Iterator begin () {
-			return first;
-		}
-		Iterator end () {
-			return last;
-		}
-	};
-	template <typename T> using slice = base_slice<iterator<T>>;
-	template <typename T> using const_slice
-		= base_slice<const_iterator<T>>;
-public:
 	buffer ();
 	explicit buffer (size_t size);
 	buffer (size_t size, size_t capacity);
@@ -55,11 +32,8 @@ public:
 	size_t capacity () const noexcept {
 		return capacity_;
 	}
-	/// Returns the number of elements of thie `buffer`.
-	template <typename T>
-	size_t count () const noexcept {
-		return size_/sizeof(T);
-	}
+	/// Sets the capacity of this `buffer` to at least `new_cap`.
+	/// New storage is allocated if necessary.
 	void reserve (size_t new_cap);
 	/// Reduces the [capacity] of this `buffer` to [size].
 	void shrink_to_fit ();
@@ -115,27 +89,140 @@ public:
 		return const_cast<buffer *>(this)->data<T>();
 	}
 public:
+	template <typename T>
+	struct slice {
+		using iterator = T *;
+		using const_iterator = typename std::remove_const<T>::type *;
+
+		/// Returns the number of elements of this `slice`.
+		size_t count () const 
+		{ return last - first + 1; }
+
+		/// Returns an `iterator` to the begining of this `slice`.
+		iterator begin ()
+		{ return first; }
+		/// Returns a `const_iterator` to the begining of this 
+		/// `slice`.
+		const_iterator begin () const
+		{ return const_cast<slice *>(this)->begin(); }
+		/// Returns a `const_iterator` to the begining of this 
+		/// `slice`.
+		const_iterator cbegin () const
+		{ return const_cast<slice *>(this)->begin(); }
+
+		/// Returns an `iterator` to the element following the last
+		/// element of this `slice`.
+		iterator end ()
+		{ return last + 1; }
+		/// Returns a `const_iterator` to the element following the
+		/// last element of this `slice`.
+		const_iterator end () const
+		{ return const_cast<slice *>(this)->end(); }
+		/// Returns a `const_iterator` to the element following the
+		/// last element of this `slice`.
+		const_iterator cend () const
+		{ return const_cast<slice *>(this)->end(); }
+
+		/// Returns a reversed `iterator` to the last element of this
+		/// `slice`.
+		std::reverse_iterator<const_iterator> rbegin ()
+		{ return std::reverse_iterator<iterator>(end()); }
+		/// Returns a reversed `const_iterator` to the last element of
+		/// this `slice`.
+		std::reverse_iterator<const_iterator> rbegin () const
+		{ return const_cast<slice *>(this)->rbegin(); }
+		/// Returns a reversed `const_iterator` to the last element of
+		/// this `slice`.
+		std::reverse_iterator<const_iterator> rcbegin () const
+		{ return const_cast<slice *>(this)->rbegin(); }
+
+		/// Returns a reversed `iterator` to the element preceding the
+		/// first element of this `slice`.
+		std::reverse_iterator<iterator> rend ()
+		{ return std::reverse_iterator<iterator>(begin()); }
+		/// Returns a reversed `const_iterator` to the element
+		/// preceding the first element of this `slice`.
+		std::reverse_iterator<const_iterator> rend () const
+		{ return  const_cast<slice *>(this)->rend(); }
+		/// Returns a reversed `const_iterator` to the element
+		/// preceding the first element of this `slice`.
+		std::reverse_iterator<const_iterator> rcend () const
+		{ return  const_cast<slice *>(this)->rend(); }
+
+		iterator first;
+		iterator last;
+	};
+	template <typename T>
+	struct const_slice {
+		using iterator = typename std::remove_const<T>::type *;
+		using const_iterator = iterator;
+
+		/// Returns the number of elements of this `const_slice`.
+		size_t count () const 
+		{ return last - first; }
+
+		/// Returns an `iterator` to constant to the begining of this
+		/// `const_slice`.
+		iterator begin () const
+		{ return first; }
+		/// Returns an `iterator` to constant to the begining of this
+		/// `const_slice`.
+		iterator cbegin () const
+		{ return const_cast<const_slice *>(this)->begin(); }
+
+		/// Returns an `iterator` to constant to the element following
+		/// the last element of this `const_slice`.
+		const_iterator end () const
+		{ return last; }
+		/// Returns an `iterator` to constant to the element following
+		/// the last element of this `const_slice`.
+		const_iterator cend () const
+		{ return const_cast<const_slice *>(this)->end(); }
+
+		/// Returns a reversed `iterator` to constant to the last
+		/// element of this `const_slice`.
+		std::reverse_iterator<iterator> rbegin () const
+		{ return std::reverse_iterator<iterator>(end()); }
+		/// Returns a reversed `iterator` to constant to the last
+		/// element of this `const_slice`.
+		std::reverse_iterator<iterator> rcbegin () const
+		{ return const_cast<const_slice *>(this)->rbegin(); }
+
+		/// Returns a reversed `iterator` to constant to the element
+		/// preceding the first element of this `const_slice`.
+		std::reverse_iterator<iterator> rend () const
+		{ return std::reverse_iterator<iterator>(begin()); }
+		/// Returns a reversed `iterator` to constant to the element
+		/// preceding the first element of this `const_slice`.
+		std::reverse_iterator<iterator> rcend () const
+		{ return  const_cast<const_slice *>(this)->rend(); }
+
+		iterator first;
+		iterator last;
+	};
+public:
 	/// Returns a `slice` of this `buffer` begining at given position
 	/// `first` up to the given position `last`.
 	template <typename T>
 	slice<T> get_slice (size_t first, size_t last) {
-		size_t n = count<T>();
-		auto it = begin<T>();
-		return slice<T> {
-			it + std::min(first, n),
-			it + std::min(last, n)
-		};
+		T * d = data<T>();
+		size_t n = size_/sizeof(T);
+		last = std::min(last, n - 1);
+		if (first < n) {
+			return { d + first, d + last };
+		}
+		return { d + n, d + n };
 	}
 	/// Returns a `slice` of this `buffer` begining at given position
 	/// `pos` up to last element.
 	template <typename T>
 	slice<T> get_slice (size_t pos) {
-		size_t n = count<T>();
-		auto it = begin<T>();
-		return {
-			it + std::min(pos, n),
-			it + n
-		};
+		T * d = data<T>();
+		size_t n = size_/sizeof(T);
+		if (pos < n) {
+			return { d + pos, d + n - 1 };
+		}
+		return { d + n, d + n };
 	}
 	/// Returns a `const_slice` of this `buffer` begining at given
 	/// position `first` up to the given position `last`.
@@ -148,77 +235,6 @@ public:
 	template <typename T>
 	const_slice<T> get_slice (size_t pos) const {
 		return const_cast<buffer *>(this)->get_slice<T>(pos);
-	}
-
-public:
-	/// Returns an `iterator` to the begining of this `buffer`.
-	template <typename T>
-	iterator<T> begin () {
-		return data<T>();
-	}
-	/// Returns a `const_iterator` to the begining of this `buffer`.
-	template <typename T>
-	const_iterator<T> begin () const {
-		const_cast<buffer *>(this)->begin<T>();
-	}
-	/// Returns a `const_iterator` to the begining of this `buffer`.
-	template <typename T>
-	const_iterator<T> cbegin () const {
-		const_cast<buffer *>(this)->begin<T>();
-	}
-	/// Returns an `iterator` to the element following the last element of
-	/// this `buffer`.
-	template <typename T>
-	iterator<T> end () {
-		return data<T>() + count<T>();
-	}
-	/// Returns an `iterator` to the element following the last element of
-	/// this `buffer`.
-	template <typename T>
-	const_iterator<T> end () const {
-		return const_cast<buffer *>(this)->end<T>();
-	}
-	/// Returns an `iterator` to the element following the last element of
-	/// this `buffer`.
-	template <typename T>
-	const_iterator<T> cend () const {
-		return const_cast<buffer *>(this)->end<T>();
-	}
-	/// Returns a reversed `iterator` to the last element of this
-	/// `buffer`.
-	template <typename T>
-	std::reverse_iterator<iterator<T>> rbegin () {
-		return std::reverse_iterator<iterator<T>>(end<T>());
-	}
-	/// Returns a reversed `const_iterator` to the last element of this
-	/// `buffer`.
-	template <typename T>
-	std::reverse_iterator<const_iterator<T>> rbegin () const {
-		return const_cast<buffer *>(this)->rbegin<T>();
-	}
-	/// Returns a reversed `const_iterator` to the last element of this
-	/// `buffer`.
-	template <typename T>
-	std::reverse_iterator<const_iterator<T>> rcbegin () const {
-		return const_cast<buffer *>(this)->rbegin<T>();
-	}
-	/// Returns a reversed `iterator` to the element preceding the first
-	/// element of this `buffer`.
-	template <typename T>
-	std::reverse_iterator<iterator<T>> rend () {
-		return std::reverse_iterator<iterator<T>>(begin<T>());
-	}
-	/// Returns a reversed `iterator` to the element preceding the first
-	/// element of this `buffer`.
-	template <typename T>
-	std::reverse_iterator<const_iterator<T>> rend () const {
-		return const_cast<buffer *>(this)->rend<T>();
-	}
-	/// Returns a reversed `const_iterator` to the element preceding the
-	/// first element of this `buffer`.
-	template <typename T>
-	std::reverse_iterator<const_iterator<T>> rcend () const {
-		return const_cast<buffer *>(this)->rend<T>();
 	}
 private:
 	size_t capacity_;
