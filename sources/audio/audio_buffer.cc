@@ -50,6 +50,12 @@ format::size_type buffer::frame_count () const noexcept {
 	return frames_.size()/format_.channel_count();
 }
 
+buffer::frame buffer::at (format::size_type idx) {
+	format::size_type channel_count = format_.channel_count();
+	auto it = frames_.begin() + channel_count*idx;
+	return frame(it, it + channel_count);
+}
+
 void buffer::append (const buffer &rhs) throw(error) {
 	if (format_ != rhs.format()) {
 		error::raise(error::FormatMismatched);
