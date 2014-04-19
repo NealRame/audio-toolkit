@@ -11,3 +11,5 @@
 *.lai
 *.la
 *.a
+
+/nr-audio-lib.sublime-workspace
