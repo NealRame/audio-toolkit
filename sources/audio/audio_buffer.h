@@ -21,13 +21,35 @@ public:
 	using frame_iterator = base_frame_iterator<frame>;
 	using const_frame_iterator = base_frame_iterator<const_frame>;
 public:
-	buffer (const class format &format);
+	/// Constructs an empty audio `buffer` with a given format.
+	///
+	/// *Parameters:*
+	/// - `format`
+	///    The required audio format.
+	buffer (const class format &format) noexcept;
+
+	/// Constructs an audio `buffer` containing the specifided count of
+	/// audio frame.
+	/// Frame are left un-initialized.
+	/// *Parameters:*
+	/// - `frame_count`
+	///   The requested count of frames.
 	buffer (const class format &format, format::size_type frame_count);
+
+	/// Constructs an audio `buffer` containing the required count of
+	/// frames soi that its duration reach the requested one.
 	buffer (const class format &format, double duration);
+
+	/// Copy constructor.
 	buffer (const buffer &);
-	buffer (buffer &&);
+
+	/// Move constructor.
+	buffer (buffer &&) noexcept;
 public:
+	/// Copy operator.
 	buffer & operator= (const buffer &);
+
+	/// Move operator.
 	buffer & operator= (buffer &&);
 public:
 	/// Returns a reference on the `format` object of this `buffer`.

@@ -7,7 +7,7 @@
 
 using namespace com::nealrame::audio;
 
-buffer::buffer (const class format &format) :
+buffer::buffer (const class format &format) noexcept :
 	format_(format) {
 }
 
@@ -25,7 +25,7 @@ buffer::buffer (const buffer &rhs) :
 	frames_(rhs.frames_) {
 }
 
-buffer::buffer (buffer &&rhs) :
+buffer::buffer (buffer &&rhs) noexcept :
 	format_(rhs.format()),
 	frames_(std::move(rhs.frames_)) {
 }
