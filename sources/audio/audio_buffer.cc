@@ -36,10 +36,15 @@ buffer & buffer::operator= (const buffer &rhs) {
 	return *this;
 }
 
-buffer & buffer::operator= (buffer &&rhs) {
+buffer & buffer::operator= (buffer &&rhs) noexcept {
 	format_ = rhs.format();
 	frames_ = std::move(rhs.frames_);
 	return *this;
+}
+
+void buffer::swap (buffer &rhs) noexcept {
+	std::swap(format_, rhs.format_);
+	std::swap(frames_, rhs.frames_);
 }
 
 double buffer::duration () const noexcept {
@@ -48,6 +53,10 @@ double buffer::duration () const noexcept {
 
 format::size_type buffer::frame_count () const noexcept {
 	return frames_.size()/format_.channel_count();
+}
+
+format::size_type buffer::capacity () const noexcept {
+	return frames_.capacity()/format_.channel_count();
 }
 
 buffer::frame buffer::at (format::size_type idx) {
@@ -73,7 +82,7 @@ void buffer::reserve (format::size_type frame_count) {
 }
 
 buffer::frame_iterator buffer::set_duration (double duration) {
-	return set_frame_count(format_.duration(duration));
+	return set_frame_count(format_.frame_count(duration));
 }
 
 buffer::frame_iterator buffer::set_frame_count (format::size_type frame_count) {

@@ -13,6 +13,8 @@
 namespace com {
 namespace nealrame {
 namespace audio {
+/// class com::nealrame::audio::buffer
+/// ==================================
 class buffer {
 public:
 	class frame;
@@ -45,12 +47,29 @@ public:
 
 	/// Move constructor.
 	buffer (buffer &&) noexcept;
+
 public:
 	/// Copy operator.
-	buffer & operator= (const buffer &);
+	///
+	/// *Parameters:*
+	/// - `rhs`
+	///   The `buffer` to be assigned from.
+	buffer & operator= (const buffer &rhs);
 
 	/// Move operator.
-	buffer & operator= (buffer &&);
+	///
+	/// *Parameters:*
+	/// - `rhs`
+	///   The `buffer` to be assigned from.
+	buffer & operator= (buffer &&) noexcept;
+
+public:
+	/// Swaps this `buffer` and the one specified.
+	/// *Parameters:*
+	/// - `rhs`
+	///   The `buffer` to be swaped with.
+	void swap (buffer &rhs) noexcept;
+
 public:
 	/// Returns a reference on the `format` object of this `buffer`.
 	class format & format () noexcept
@@ -66,6 +85,12 @@ public:
 
 	/// Returns the frame count of this `buffer`.
 	format::size_type frame_count () const noexcept;
+
+	/// Returns the frames capacity of this `buffer`.
+	/// The `buffer` capacity is the maximum count of frames a `buffer` can
+	/// contain before the need of a memory allocation.
+	format::size_type capacity () const noexcept;
+
 public:
 	/// Returns a reference to the audio frame at the given index.
 	/// 
@@ -84,6 +109,7 @@ public:
 	const_frame at (format::size_type idx) const;
 	const_frame operator[] (format::size_type idx) const
 	{ return at(idx); }
+
 public:
 	/// Append the given `sequence` to this `buffer`.
 	///
@@ -155,6 +181,7 @@ public:
 	/// - `frame_count`
 	///   The requested count of frames.
 	frame_iterator set_frame_count (format::size_type frame_count);
+
 public:
 	/// Returns a `frame_iterator` on the first frame of this `buffer`.
 	frame_iterator begin ()
@@ -183,7 +210,8 @@ public:
 	/// Returns a `const_frame_iterator` on the frame following the last
 	/// audio frame of this `buffer`.
 	const_frame_iterator cend () const
-	{ return const_cast<buffer *>(this)->end(); }	
+	{ return const_cast<buffer *>(this)->end(); }
+
 public:
 	/// class com::nealrame::audio::buffer::base_frame_iterator
 	/// =======================================================
@@ -259,14 +287,28 @@ public:
 		void increment () { advance( 1); }
 		void decrement () { advance(-1); }
 	};
-	/// class com::nealrame::audio::const_frame
-	/// =======================================
+	/// class com::nealrame::audio::buffer::const_frame
+	/// ===============================================
 	class const_frame {
 	public:
 		using iterator = std::vector<float>::const_iterator;
 		using const_iterator = std::vector<float>::const_iterator;
 		using reference = const float &;
 		using size_type = format::size_type;
+	public:
+		struct enabler {};
+		template <typename FrameType>
+		const_frame (const FrameType &rhs,
+			typename std::enable_if<
+				std::is_convertible<
+					typename FrameType::reference,
+					reference
+				>::value,
+				enabler
+			>::type = enabler()) :
+			first_(rhs.first_),
+			last_(rhs.last_) {
+		}
 	public:
 		/// Returns the count of channel of this `buffer::const_frame`.
 		size_type channel_count () const
@@ -311,14 +353,29 @@ public:
 		friend class com::nealrame::audio::buffer;
 		friend class base_frame_iterator<const_frame>;
 	};
-	/// class com::nealrame::audio::frame
-	/// ======================================
+	/// class com::nealrame::audio::buffer::frame
+	/// =========================================
 	class frame {
 	public:
 		using iterator = std::vector<float>::iterator;
 		using const_iterator = std::vector<float>::const_iterator;
 		using reference = float &;
 		using size_type = format::size_type;
+	public:
+		/// Copy constructor.
+		/// Initializes this `frame` with the given `frame`.
+		/// After that this `frame` and the other one will refere to
+		/// the same sequence of sample, that is to say, updates on one
+		/// frame cause updates on the other.
+		///
+		/// *Paramaters*:
+		/// - `rhs`
+		///   The frame to be referred.
+		frame (const frame &rhs) :
+			first_(rhs.first_),
+			last_(rhs.last_) {
+		}
+
 	public:
 		/// Replaces the content of this `buffer::frame` with the
 		/// content of the given `buffer::frame`.
@@ -361,9 +418,9 @@ public:
 		/// *Parameters:*
 		/// - `channel`
 		///   The request channel.
-		const float & at (format::size_type channel) const
+		float & at (format::size_type channel) const
 		{ return const_cast<frame *>(this)->at(channel); }
-		const float & operator[] (format::size_type channel) const
+		float & operator[] (format::size_type channel) const
 		{ return const_cast<frame *>(this)->at(channel); }
 		/// Returns an `iterator` to the first sample of this
 		/// `buffer::frame`.
