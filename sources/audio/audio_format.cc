@@ -2,16 +2,16 @@
 
 using namespace com::nealrame::audio;
 
-format::format (unsigned int channel_count, unsigned int sample_rate)
+format::format (unsigned int channel_count, unsigned int frame_rate)
 	throw(error) {
 	if (channel_count < 1) {
-		error::raise(error::FormatWrongChannelCountValue);
+		error::raise(error::FormatUnhandledChannelCountValueError);
 	}
 	channel_count_ = channel_count;
-	set_sample_rate(sample_rate);
+	set_frame_rate(frame_rate);
 }
 
-format & format::set_sample_rate (unsigned int rate) throw(error) {
+format & format::set_frame_rate (unsigned int rate) throw(error) {
 	switch (rate) {
 	case  8000:
 	case 16000:
@@ -19,26 +19,26 @@ format & format::set_sample_rate (unsigned int rate) throw(error) {
 	case 44100:
 	case 48000:
 	case 96000:
-		sample_rate_ = rate;
+		frame_rate_ = rate;
 		break;
 
 	default:
-		error::raise(error::FormatWrongSampleRateValue);
+		error::raise(error::FormatUnhandledSampleRateValueError);
 	}
 	return *this;
 }
 
 double format::duration (size_type frame_count) const noexcept {
 	return static_cast<double>(
-		frame_count/static_cast<double>(sample_rate_)
+		frame_count/static_cast<double>(frame_rate_)
 	);
 }
 
 format::size_type format::frame_count (double duration) const noexcept {
-	return static_cast<double>(sample_rate_)*duration;
+	return static_cast<double>(frame_rate_)*duration;
 }
 
 bool format::operator== (const format &other) const noexcept {
 	return channel_count_ == other.channel_count_ 
-		&& sample_rate_ == other.sample_rate_;
+		&& frame_rate_ == other.frame_rate_;
 }

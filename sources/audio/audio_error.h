@@ -16,9 +16,14 @@ namespace audio {
 class error : public std::exception {
 public:
 	enum status {
-		FormatWrongSampleRateValue,
-		FormatWrongChannelCountValue,
-		FormatMismatched,
+		CodecFormatError,
+		CoderNotFound,
+		DecoderNotFound,
+		FormatUnhandledChannelCountValueError,
+		FormatUnhandledSampleRateValueError,
+		FormatUnhandledSampleQuantificationValueError,
+		FormatMismatchedError,
+		IOError,
 	};
 public:
 	static void raise (enum status s)
