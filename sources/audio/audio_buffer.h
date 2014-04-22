@@ -6,6 +6,8 @@
 #define AUDIO_BUFFER_H_
 
 #include <vector>
+#include <iostream>
+
 #include <boost/iterator/iterator_facade.hpp>
 
 #include <audio/format>
@@ -271,25 +273,26 @@ public:
 			ptr_(ptr),
 			channel_count_(channel_count) {
 		}
-		FRAME_TYPE dereference () const {
-			return FRAME_TYPE(ptr_, channel_count_);
-		}
+		FRAME_TYPE dereference () const
+		{ return FRAME_TYPE(ptr_, channel_count_); }
 		template <typename OTHER_FRAME_TYPE>
-		bool equal (base_frame_iterator<OTHER_FRAME_TYPE> const &rhs) const {
-			return ptr_ == rhs.ptr_;
-		}
-		ptrdiff_t distance_to (base_frame_iterator const &rhs) const {
-			return (ptr_ - rhs.ptr_)/channel_count_;
-		}
-		void advance (ptrdiff_t n) {
-			ptr_ += n*channel_count_;
-		}
-		void increment () { advance( 1); }
-		void decrement () { advance(-1); }
+		bool equal (base_frame_iterator<OTHER_FRAME_TYPE> const &rhs) const
+		{ return ptr_ == rhs.ptr_; }
+		ptrdiff_t distance_to (base_frame_iterator const &rhs) const
+		{ return (ptr_ - rhs.ptr_)/channel_count_; }
+		void advance (ptrdiff_t n)
+		{ ptr_ += n*channel_count_; }
+		void increment ()
+		{ advance( 1); }
+		void decrement ()
+		{ advance(-1); }
 	};
 	/// class com::nealrame::audio::buffer::const_frame
 	/// ===============================================
 	class const_frame {
+#if defined(DEBUG)
+	friend std::ostream & operator<< (std::ostream &, buffer::const_frame);
+#endif
 	public:
 		using iterator = std::vector<float>::const_iterator;
 		using const_iterator = std::vector<float>::const_iterator;
@@ -320,10 +323,10 @@ public:
 		/// *Parameters:*
 		/// - `channel`
 		///   The request channel.
-		const float & sample_at (size_type channel) const
+		const float & at (size_type channel) const
 		{ return *(first_ + channel); }
 		const float & operator[] (format::size_type channel) const
-		{ return sample_at(channel); }
+		{ return at(channel); }
 		/// Returns an `iterator` to the constant first sample of this
 		/// `buffer::const_frame`.
 		iterator begin () const
@@ -342,7 +345,7 @@ public:
 		{ return last_; }
 	private:
 		const_frame (iterator first, size_type channel_count) :
-			const_frame(first_, first_ + channel_count) {
+			const_frame(first, first + channel_count) {
 		}
 		const_frame (iterator first, iterator last) :
 			first_(first), last_(last) {
@@ -424,7 +427,6 @@ public:
 		{ return const_cast<frame *>(this)->at(channel); }
 		/// Returns an `iterator` to the first sample of this
 		/// `buffer::frame`.
-
 		iterator begin () 
 		{ return first_; }
 		/// Returns an `iterator` to the first constant sample of this

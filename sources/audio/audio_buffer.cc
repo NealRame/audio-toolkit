@@ -67,7 +67,7 @@ buffer::frame buffer::at (format::size_type idx) {
 
 void buffer::append (const buffer &rhs) throw(error) {
 	if (format_ != rhs.format()) {
-		error::raise(error::FormatMismatched);
+		error::raise(error::FormatMismatchedError);
 	}
 	auto it = set_frame_count(frame_count() + rhs.frame_count());
 	std::copy(rhs.begin(), rhs.end(), it);
