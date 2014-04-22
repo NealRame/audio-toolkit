@@ -73,7 +73,7 @@ void audio::buffer::append (const class sequence &seq) throw(error) {
 	if (seq.format() != format()) {
 		error::raise(error::FormatDoesNotMatch);
 	}
-	pimpl_->raw_buffer.append(seq.raw_buffer());
+	pimpl_->raw_buffer.append(seq.data());
 }
 
 void audio::buffer::cutdown (double duration) {

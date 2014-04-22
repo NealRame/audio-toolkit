@@ -16,6 +16,7 @@
 			"-I/Library/Developer/CommandLineTools/usr/lib/c++/v1/",
 			"-I/usr/include/x86_64-linux-gnu/c++/4.8",
 			"-I${project_path}/sources",
+			"-I${project_path}/sources/includes",
 			"-I${project_path}/vendors/utf8",
 			"-I${project_path}/vendors/gtest",
 			"-I${project_path}/vendors/gtest/include",

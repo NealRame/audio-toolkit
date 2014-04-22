@@ -11,6 +11,7 @@ VPATH        := $(VPATH):$(CURDIR)/sources/audio
 VPATH        := $(VPATH):$(CURDIR)/sources/audio/codecs
 
 INCLUDE_PATH += -I$(CURDIR)/sources
+INCLUDE_PATH += -I$(CURDIR)/sources/includes
 
 CFLAGS       += $(INCLUDE_PATH)
 CXXFLAGS     += $(INCLUDE_PATH)

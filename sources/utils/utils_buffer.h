@@ -43,8 +43,11 @@ public:
 	virtual size_t copy (const buffer &source,
 				size_t source_offset, size_t length,
 				size_t destination_offset) {
-		return copy(static_cast<const uint8_t *>(source.data()) + source_offset,
-				length, destination_offset);
+		return copy(
+			static_cast<const uint8_t *>(source.data()) + source_offset,
+			length,
+			destination_offset
+		);
 	}
 	/// Copy `length` bytes from a given raw data pointer within this
 	/// `static_buffer` starting at offset `offset`.

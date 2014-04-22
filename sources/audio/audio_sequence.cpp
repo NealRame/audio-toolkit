@@ -1,15 +1,24 @@
-#include <audio/sequence>
+#include "audio_sequence.h"
+#include "../utils/utils_buffer.h"
 
+using namespace com::nealrame;
 using namespace com::nealrame::audio;
 
-sequence::sequence (const class format &fmt, com::nealrame::utils::buffer &buffer) :
-	format_(fmt),
-	raw_buffer_(buffer) {
+struct sequence::impl {
+	impl (class format format, utils::buffer &buffer) :
+		format(format),
+		raw_buffer(buffer) {
+	}
+	class format format;
+	utils::buffer &raw_buffer;
+};
+
+sequence::sequence (const class format &fmt, utils::buffer &buffer) :
+	pimpl_(std::unique_ptr<impl>(new impl(fmt, buffer))) {
 }
 
 sequence::sequence (sequence &&other) :
-	format_(other.format_),
-	raw_buffer_(other.raw_buffer_.data(), other.size()) {
+	pimpl_(std::unique_ptr<impl>(new impl(other.format(), other.data())) {
 }
 
 sequence::~sequence () {
@@ -37,6 +46,13 @@ frame sequence::frame_at (size_type frame_index) {
 
 const_frame sequence::frame_at (size_type frame_index) const {
 	return *(begin() + frame_index);
+}
+
+sequence sequence::subsequence (size_type frame_index, size_type count) {
+	size_t begin = format_.size(static_cast<unsigned int>(frame_index));
+	size_t end = begin + format_.size(static_cast<unsigned int>(count));
+	utils::static_buffer slice = raw_buffer_.slice(begin, end);
+	return sequence(format_, slice);
 }
 
 sequence::iterator sequence::begin () {

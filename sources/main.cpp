@@ -4,17 +4,15 @@
 #include <utils/buffer>
 
 #include <audio/buffer>
+#include <audio/codecs>
 #include <audio/format>
 #include <audio/frame>
 #include <audio/generator>
 #include <audio/sequence>
 
-#include <audio/codec>
-
 using namespace com::nealrame;
 
 int main(int argc, char **argv) {
-	int status = 0;
 	try {
 
 		// std::shared_ptr<audio::codec::decoder> decoder 
@@ -63,9 +61,9 @@ int main(int argc, char **argv) {
 		coder->encode("triangle.wav", audio_triangle_buffer->sequence());
 
 	} catch (audio::error aerr) {
-		status = 1;
-		std::cerr << aerr.message << std::endl;
+		std::cerr << aerr.what() << std::endl;
+		exit(EXIT_FAILURE);
 	}
 
-	return status;
+	return 0;
 }

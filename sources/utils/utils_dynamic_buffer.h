@@ -12,8 +12,8 @@
 #include <iterator>
 #include <string>
 
-#include "utils_buffer.h"
-#include "utils_static_buffer.h"
+#include <utils/base_buffer>
+#include <utils/static_buffer>
 
 namespace com {
 namespace nealrame {
@@ -98,7 +98,7 @@ public:
 	/// Return the number of bytes read.
 	virtual size_t fill (std::istream &in, size_t len, size_t offset = 0);
 	/// Try to fill this `dynamic_buffer` starting at the given `offset` 
-	/// with ` bytes read from the given input stream `in`.
+	/// with bytes read from the given input stream `in`.
 	///
 	/// Set this buffer length with the effective count of bytes read.
 	/// Return the number of bytes read.

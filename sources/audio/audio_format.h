@@ -9,7 +9,7 @@
 
 #include <cstddef>
 
-#include "audio_error.h"
+#include <audio/error>
 
 namespace com {
 namespace nealrame {

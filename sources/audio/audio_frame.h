@@ -21,7 +21,6 @@
 namespace com {
 namespace nealrame {
 namespace audio {
-
 /// com::nealrame::audio::frame
 /// 
 /// The `frame` class provides representation of an audio buffer frame. 

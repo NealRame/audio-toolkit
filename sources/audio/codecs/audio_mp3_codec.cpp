@@ -10,6 +10,8 @@
 
 extern "C" {
 #	include <mpg123.h>
+#	include <lame/lame.h>
+#	include <stdio.h>
 }
 
 #include <cstring>
@@ -31,6 +33,7 @@ extern "C" {
 #include "../audio_error.h"
 #include "../audio_format.h"
 #include "../audio_sequence.h"
+#include "../audio_const_sequence.h"
 
 using namespace com::nealrame;
 using namespace com::nealrame::audio;
@@ -48,11 +51,9 @@ struct decoder_data {
 			if ((error_code = mpg123_init()) != MPG123_OK) {
 				error::raise(error::CodecUnexpectedError);
 			}
-
 			if ((handle = mpg123_new(nullptr, &error_code)) == nullptr) {
 				error::raise(error::CodecUnexpectedError);
 			}
-
 			// Force the floating point output
 			mpg123_param(handle,
 				MPG123_ADD_FLAGS, MPG123_FORCE_FLOAT, 0.);
@@ -61,10 +62,11 @@ struct decoder_data {
 				error::raise(error::CodecUnexpectedError);
 			}
 		} catch (error &err) {
-			err.message = mpg123_plain_strerror(error_code);
-			throw err;
+			error::raise(
+				err.status(),
+				mpg123_plain_strerror(error_code)
+			);
 		}
-
 		in_buffer.reserve(4096);
 	}
 
@@ -112,65 +114,10 @@ audio::format read_format (decoder_data &mpgdata, std::ifstream &in) {
 		break;
 	}
 
-	throw error {
+	throw error(
 		error::CodecUnexpectedError, 
 		mpg123_strerror(mpgdata.handle)
-	};
-}
-
-static inline sequence & process_sequence(sequence &seq, unsigned int seq_idx) {
-	std::ostringstream oss;
-	std::shared_ptr<audio::codec::coder> coder 
-		= audio::codec::coder::get(".wav");
-
-	// unsigned int channel_count = seq.format().channel_count();
-	// float eps = 1.f/std::numeric_limits<int16_t>::max();
-	// bool ok = false;
-	// auto it_n0 = seq.begin();
-
-	// for (auto it_n1 = it_n0+1, end = seq.end(); it_n1 != end; it_n0++, it_n1++) {
-	// 	for (unsigned int i = 0; i < channel_count; ++i) {
-	// 		float &sn0 = it_n0->sample_at(i);
-	// 		float &sn1 = it_n1->sample_at(i);
-
-	// 		if (fabs(fabs(sn1) - 1) < eps) {
-	// 			std::cout << "|sn0| = " << sn0 << std::endl;
-	// 			std::cout << "|sn1| = " << sn1 << std::endl;
-	// 		}
-
-	// 		ok = ok || (fabs(fabs(sn1) - 1) < eps);
-
-	// 		if (ok && fabs(sn0 - sn1) > 1.f) {
-	// 			std::cout << "-----------" << std::endl;
-	// 			std::cout << "sn0: " << sn0 << std::endl;
-	// 			std::cout << "sn1: " << sn1 << std::endl;
-	// 			std::cout << "|sn0 - sn1|: " << fabs(sn0 - sn1) << std::endl;
-	// 			std::cout << "-----------" << std::endl;
-	// 			sn1 = sn0;
-	// 		}
-	// 	}
-	// }
-
-	unsigned int off = 0;
-
-	if (seq_idx == 4191) {
-
-		for (auto frame: seq) {
-			std::cout << seq_idx << ":" << off++;
-			for (auto sample: frame) {
-				std::cout << ":" << sample;
-			}
-			std::cout << std::endl;
-		}
-
-		oss << "seqs/seq_#" << seq_idx << "-" << seq.frame_count() << ".wav";
-		std::cout << "encode seq::" << seq_idx << "[" << seq.frame_count() << "]" << std::endl;
-
-		coder->encode(oss.str(), seq);		
-	}
-
-
-	return seq;
+	);
 }
 
 void read_frames (decoder_data &mpgdata, std::ifstream &in, buffer &out) {
@@ -180,7 +127,7 @@ void read_frames (decoder_data &mpgdata, std::ifstream &in, buffer &out) {
 
 	size_t done;
 	int err;
-	unsigned int seq_idx = 0;
+	// unsigned int seq_idx = 0;
 
 	do {
 		err = mpg123_read(mpgdata.handle,
@@ -191,23 +138,10 @@ void read_frames (decoder_data &mpgdata, std::ifstream &in, buffer &out) {
 
 		switch (err) {
 		case MPG123_OK:
-			// std::cout 
-			// 	<< "       [OK] frame cout: " 
-			// 	<< out.format().frame_count(done)
-			// 	<< " (done = " << done << ")"
-			// 	<< std::endl;
-			{
-				sequence seq = sequence(out.format(), out_buffer);
-				out.append(process_sequence(seq, seq_idx++));
-			}
+			out.append(sequence(out.format(), out_buffer));
 			break;
 
 		case MPG123_NEED_MORE:
-			// std::cout
-			// 	<< "[NEED_MORE] frame cout: " 
-			// 	<< out.format().frame_count(done)
-			// 	<< " (done = " << done << ")"
-			// 	<< std::endl;
 			if (! (feed(mpgdata, in) > 0)) {
 				err = MPG123_DONE;
 			}
@@ -237,61 +171,87 @@ codec::MP3_decoder::decode(std::ifstream &input) const throw(error) {
 	return audio_buffer;
 }
 
-void 
-codec::MP3_coder::encode(std::ofstream &, const audio::sequence &) const 
-	throw(error) {
-
-}
-
 //////////////////////////////////////////////////////////////////////////////
 // Coder /////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-// int lame_quality(Coder::Quality quality) {
-// 	switch (quality) {
-// 	case Coder::Quality::Best: return 0;
-// 	case Coder::Quality::Good: return 2;
-// 	case Coder::Quality::Acceptable: return 5;
-// 	case Coder::Quality::Fastest: return 7;
-// 	}
-// 	return 0;
-// }
+static
+int lame_quality(enum codec::coder::quality q) {
+	switch (q) {
+	case codec::coder::quality::Best:
+		return 0;
 
-// #define ERR_HANDLER_DEFAULT_BUFFER_SIZE 128
-// #define MP3_ENCODE_INPUT_BUFFER_SIZE   1024
+	case codec::coder::quality::Good:
+		return 2;
 
-// void error_handler(const char *fmt, va_list ap) {
-// 	char **buffer = nullptr;
-// 	size_t buffer_size = ERR_HANDLER_DEFAULT_BUFFER_SIZE;
-// 	bool again;
-// 	do {
-// 		size_t written;
-// 		*buffer = (char *)realloc(*buffer, buffer_size);
+	case codec::coder::quality::Acceptable: 
+		return 5;
 
-// 		written = vsnprintf(*buffer, buffer_size, fmt, ap);
+	case codec::coder::quality::Fastest:
+		return 7;
+	}
 
-// 		if (written >= buffer_size) {
-// 			again = true;
-// 			buffer_size = written;
-// 		} else {
-// 			again = false;
-// 		}
-// 	} while (again);
-// 	Error::raise(Error::Status::MP3CodecError, std::string(*buffer));
-// }
+	return 0;
+}
 
-// #if defined(DEBUG)
-// void debug_handler(const char *, va_list ap) {
-// 	fvprintf(stderr, "%s\n", ap);
-// }
 
-// void message_handler(const char *, va_list) {
-// 	fvprintf(stderr, "%s\n", ap);
-// }
-// #else
-// void debug_handler(const char *, va_list) {}
-// void message_handler(const char *, va_list) {}
-// #endif
+#if defined(DEBUG)
+void coder_debug_handler (const char *, va_list ap) {
+	fvprintf(stderr, "%s\n", ap);
+}
+void coder_message_handler (const char *, va_list ap) {
+	fvprintf(stdout, "%s\n", ap);
+}
+#else
+void coder_debug_handler (const char *, va_list) {}
+void coder_message_handler (const char *, va_list) {}
+#endif
+
+static void coder_error_handler (const char *fmt, va_list ap) {
+	size_t msg_size = 128u;
+	struct deleter { void operator() (char *a) { free(a); } };
+	std::unique_ptr<char [], deleter> msg(static_cast<char *>(malloc(msg_size)));
+	do {
+		size_t size = vsnprintf(msg.get(), msg_size, fmt, ap);
+		if (size > msg_size) {
+			msg_size = size;
+			msg.reset(static_cast<char *>(realloc(msg.get(), msg_size)));
+		} else {
+			error::raise(error::CodecUnexpectedError, msg.get());
+		}
+	} while (true);
+}
+
+struct encode_data {
+
+	encode_data (sequence &seq, enum codec::coder::quality quality) {
+		if ((gfp = lame_init()) == nullptr) {
+			error::raise(error::CodecUnexpectedError);
+		}
+
+		lame_set_errorf(gfp, coder_error_handler);
+		lame_set_debugf(gfp, coder_debug_handler);
+		lame_set_msgf(gfp, coder_message_handler);
+
+		format fmt = seq.format();
+
+		lame_set_num_channels(gfp, fmt.channel_count());
+		lame_set_in_samplerate(gfp, fmt.sample_rate());
+		lame_set_mode(gfp, JOINT_STEREO);
+		// lame_set_bWriteVbrTag(gfp, 0);
+		lame_set_quality(gfp, lame_quality(quality));
+
+		if (lame_init_params(gfp) < 0) {
+			error::raise(error::CodecUnexpectedError);
+		}
+	}
+
+	~encode_data () {
+		lame_close(gfp);
+	}
+
+	lame_t gfp;
+};
 
 // struct RAII_MP3CoderData {
 // 	std::ofstream &output;
@@ -343,37 +303,21 @@ codec::MP3_coder::encode(std::ofstream &, const audio::sequence &) const
 // 	}
 // };
 
-// void MP3Coder::encode(const Buffer &buffer, std::ofstream &out) const {
-// 	RAII_MP3CoderData encode_data(*this, buffer, out);
+void codec::MP3_coder::encode(std::ofstream &, const audio::sequence &seq) const throw(error) {
+	static const unsigned int input_frame_count = 1024u;
 
-// 	unsigned int offset = 0;
-// 	int nbytes;
+	format fmt = seq.format();
 
-// 	do {
-// 		unsigned int count = buffer.read(offset, MP3_ENCODE_INPUT_BUFFER_SIZE, encode_data.mp3_input_buffer);
+	utils::dynamic_buffer out_buffer(1.25*input_frame_count + 7200);
+	unsigned int frame_index = 0;
 
-// 		nbytes = lame_encode_buffer_interleaved_ieee_float(
-// 				encode_data.gfp, 
-// 				encode_data.mp3_input_buffer, 
-// 				count,
-// 				(unsigned char *)encode_data.mp3_output_buffer,
-// 				encode_data.mp3_output_buffer_size);
+	do {
+		const void * data = seq.subsequence(frame_index, input_frame_count).raw_buffer().data();
+	} while (true);
 
-// 		if (nbytes >= 0) {
-// 			out.write((char *)encode_data.mp3_output_buffer, nbytes);
-// 		} else {
-// 			Error::raise(Error::Status::MP3CodecError,
-// 				(boost::format("Lame encode error code: %1%") % nbytes).str());
-// 		}
 
-// 		offset += count;
-// 	} while (offset < buffer.frameCount());
 
-// 	nbytes = lame_encode_flush(encode_data.gfp,
-// 				(unsigned char *)encode_data.mp3_output_buffer,
-// 				encode_data.mp3_output_buffer_size);
+	lame_encode_buffer_interleaved_ieee_float()
 
-// 	if (nbytes >= 0) {
-// 		out.write((char *)encode_data.mp3_output_buffer, nbytes);
-// 	}
-// }
+
+}
