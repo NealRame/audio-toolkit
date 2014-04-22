@@ -13,3 +13,4 @@
 *.a
 
 /nr-audio-lib.sublime-workspace
+/project/build
