@@ -1,2 +1,0 @@
-add_executable(audiotoolkit main.cc)
-target_link_libraries(audiotoolkit libaudiotoolkit)
