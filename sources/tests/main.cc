@@ -6,6 +6,8 @@
 #include <audio/codec>
 #include <audio/buffer>
 
+#include <audio/version>
+
 #include <boost/math/constants/constants.hpp>
 
 using namespace com::nealrame;
@@ -41,6 +43,9 @@ void store_buffer(const std::string &filename, const audio::buffer &audio_buffer
 }
 
 int main (int argc, char **argv) {
+
+	std::cout << audio::version::full << std::endl;
+
 	try {
 		audio::buffer buf =sine_generator(44100, 2, 0.9, 110, 1.);
 		store_buffer("output.wav", buf);
