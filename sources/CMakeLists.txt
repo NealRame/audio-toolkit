@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 2.6)
 project(AudioToolkit)
 
 include(GitDescribe)
-include(GetIncludeDirectories)
 
 git_describe(VERSION_MAJOR VERSION_MINOR VERSION_PATCH VERSION_HASH)
 
@@ -11,7 +10,7 @@ git_describe(VERSION_MAJOR VERSION_MINOR VERSION_PATCH VERSION_HASH)
 set(GENERATED_INCLUDES_DIRECTORY ${CMAKE_BINARY_DIR}/includes)
 file(MAKE_DIRECTORY ${GENERATED_INCLUDES_DIRECTORY})
 
-set(COMMON_CXX_FLAGS "-std=c++11 -Wall -Werror" PARENT_SCOPE)
+set(COMMON_CXX_FLAGS "-std=c++11 -stdlib=libc++ -ferror-limit=0 -Wall -Werror")
 set(CMAKE_CXX_FLAGS_DEBUG "${COMMON_CXX_FLAGS} -g -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "${COMMON_CXX_FLAGS} -O3")
 
@@ -79,8 +78,13 @@ add_executable(audiotoolkit ${TEST_SOURCES})
 target_link_libraries(audiotoolkit libaudiotoolkit)
 
 ###
-### Grab includes directory list 
+### Generate Sublime Text project file
 ###
-get_include_directories(DIRS)
 
-set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${DIRS} PARENT_SCOPE)
+# get includes directories list
+get_property(DIRS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+
+# only transform COMMON_CXX_FLAGS into a list
+string(REGEX MATCHALL "[^ ]+" FLAGS ${COMMON_CXX_FLAGS})
+
+generate_sublime_text_project("${FLAGS}" "${DIRS}")

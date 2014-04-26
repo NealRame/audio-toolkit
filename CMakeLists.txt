@@ -29,4 +29,3 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/Release/lib)
 file(MAKE_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE})
 
 add_subdirectory(${AudioToolkit_SOURCE_DIR}/sources)
-generate_sublime_text_project()
