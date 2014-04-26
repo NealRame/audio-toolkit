@@ -24,7 +24,7 @@ function(git_describe _major _minor _patch _hash)
 		message(FATAL_ERROR "Git ${GIT_ERROR}")
 	else()
 		string(REGEX REPLACE
-			"^v([0-9]+)\\.([0-9]+)-([0-9]+)-([a-zA-Z0-9]+)\\n?\\r?"
+			"^v([0-9]+)\\.([0-9]+)-([0-9]+)-([a-zA-Z0-9]+)\n?\r?"
 			"\\1;\\2;\\3;\\4"
 			DESCRIPTION
 			${GIT_DESCRIPTION}

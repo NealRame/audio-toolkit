@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.6)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/project/cmake")
+
 project(AudioToolkit)
+
+include(SublimeText)
 
 string(TOUPPER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE)
 
@@ -25,3 +29,4 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/Release/lib)
 file(MAKE_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE})
 
 add_subdirectory(${AudioToolkit_SOURCE_DIR}/sources)
+generate_sublime_text_project()

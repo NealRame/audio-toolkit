@@ -1,10 +1,9 @@
 cmake_minimum_required(VERSION 2.6)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/project/cmake")
-
 project(AudioToolkit)
 
 include(GitDescribe)
+include(GetIncludeDirectories)
 
 git_describe(VERSION_MAJOR VERSION_MINOR VERSION_PATCH VERSION_HASH)
 
@@ -12,7 +11,7 @@ git_describe(VERSION_MAJOR VERSION_MINOR VERSION_PATCH VERSION_HASH)
 set(GENERATED_INCLUDES_DIRECTORY ${CMAKE_BINARY_DIR}/includes)
 file(MAKE_DIRECTORY ${GENERATED_INCLUDES_DIRECTORY})
 
-set(COMMON_CXX_FLAGS "-std=c++11 -Wall -Werror")
+set(COMMON_CXX_FLAGS "-std=c++11 -Wall -Werror" PARENT_SCOPE)
 set(CMAKE_CXX_FLAGS_DEBUG "${COMMON_CXX_FLAGS} -g -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "${COMMON_CXX_FLAGS} -O3")
 
@@ -48,10 +47,25 @@ foreach(HEADER ${AUDIO_HEADERS})
 	file(MAKE_DIRECTORY ${AUDIO_GENERATED_INCLUDES_DIRECTORY}/${DIRNAME})
 
 	configure_file(
-		${CMAKE_SOURCE_DIR}/project/cmake/HEADER.cmake.in
+		${CMAKE_SOURCE_DIR}/project/cmake/Header.cmake.in
 		${DIRNAME}/${NAME}
 	)
 endforeach()
+
+set(VERSION_HEADER ${AUDIO_GENERATED_INCLUDES_DIRECTORY}/version)
+set(VERSION_SOURCE ${CMAKE_CURRENT_BINARY_DIR}/version.cc)
+
+list(APPEND AUDIO_SOURCES ${VERSION_SOURCE})
+
+configure_file(
+	${CMAKE_SOURCE_DIR}/project/cmake/Version.h.cmake.in
+	${VERSION_HEADER}
+)
+
+configure_file(
+	${CMAKE_SOURCE_DIR}/project/cmake/Version.cc.cmake.in
+	${VERSION_SOURCE}
+)
 
 add_library (libaudiotoolkit SHARED ${AUDIO_SOURCES})
 
@@ -63,3 +77,10 @@ set(TEST_SOURCES ${TEST_SOURCES_DIRECTORY}/main.cc)
 
 add_executable(audiotoolkit ${TEST_SOURCES})
 target_link_libraries(audiotoolkit libaudiotoolkit)
+
+###
+### Grab includes directory list 
+###
+get_include_directories(DIRS)
+
+set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${DIRS} PARENT_SCOPE)
