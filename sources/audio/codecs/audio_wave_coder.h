@@ -13,8 +13,8 @@ class buffer;
 namespace codec {
 class WAVE_coder : public coder {
 public:
-	using coder::encode;
-	virtual void encode(std::ofstream &, const buffer &) const throw(error);
+	virtual void encode_ (std::ostream &, const buffer &) const
+		throw(error);
 };
 } /* namespace codec */
 } /* namespace audio */

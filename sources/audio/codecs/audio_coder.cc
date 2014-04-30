@@ -4,32 +4,19 @@
 ///     Author: [NealRame](mailto:contact@nealrame.com)
 #include "audio_coder.h"
 
+#include <fstream>
+
 using namespace com::nealrame::audio;
+using com::nealrame::audio::codec::coder;
 
-codec::coder::coder (enum quality quality) :
-	quality_(quality) {
-}
-
-codec::coder::coder () : 
-	coder(quality::Default) {
-}
-
-void codec::coder::encode (const std::string &filename, const buffer &buffer)
+void coder::encode (const std::string &filename, const buffer &buffer)
 	const throw(error) {
-	std::ofstream ofs(filename.data(), std::ofstream::binary);
-	try {
-		encode(ofs, buffer);
-		ofs.close();
-	} catch (error &e) {
-		ofs.close();
-		throw e;
-	}
+	std::ofstream out(filename.data(), std::ofstream::binary);
+	encode_(out, buffer);
 }
 
-enum codec::coder::quality codec::coder::quality () const {
-	return quality_;
-}
-
-void codec::coder::set_quality (enum quality quality) {
-	quality = quality_;
+void coder::encode (std::ostream &stream, const buffer &buffer) 
+	const throw(error) {
+	std::ostream out(stream.rdbuf());
+	return encode_(out, buffer);
 }

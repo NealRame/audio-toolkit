@@ -12,9 +12,8 @@ namespace audio {
 class buffer;
 namespace codec {
 class WAVE_decoder: public decoder {
-public:
-	using decoder::decode;
-	virtual buffer decode(std::ifstream &) const throw(error);
+protected:
+	virtual buffer decode_ (std::istream &) const throw(error);
 };
 } /* namespace codec */
 } /* namespace audio */
