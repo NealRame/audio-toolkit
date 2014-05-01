@@ -51,7 +51,7 @@ int main (int argc, char **argv) {
 
 	try {
 		audio::buffer buf =sine_generator(44100, 2, 0.9, 110, 1.);
-		store_buffer("output.mp3", buf);
+		store_buffer("output.ogg", buf);
 	} catch (audio::error &err) {
 		std::cerr << err.status() << std::endl;
 		std::cerr << err.what() << std::endl;

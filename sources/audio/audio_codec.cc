@@ -14,6 +14,8 @@
 #include "codecs/audio_mp3_coder.h"
 #include "codecs/audio_mp3_decoder.h"
 
+// Ogg Vorbis codec
+#include "codecs/audio_ogg_vorbis_coder.h"
 
 namespace com {
 namespace nealrame {
@@ -27,6 +29,9 @@ std::shared_ptr<codec::coder> get_coder(const std::string &ext) {
 	}
 	if (extension == ".mp3") {
 		return std::make_shared<codec::MP3_coder>();
+	}
+	if (extension == ".ogg") {
+		return std::make_shared<codec::OGGVorbis_coder>();
 	}
 
 	throw error(error::CoderNotFound);
