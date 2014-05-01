@@ -6,8 +6,11 @@ include(GitDescribe)
 
 git_describe(VERSION_MAJOR VERSION_MINOR VERSION_PATCH VERSION_HASH)
 
-find_package(LibMPG123 REQUIRED)
 find_package(LibLame REQUIRED)
+find_package(LibMPG123 REQUIRED)
+find_package(LibOgg REQUIRED)
+find_package(LibVorbis REQUIRED)
+find_package(LibVorbisEnc REQUIRED)
 
 # Generated includes directory
 set(GENERATED_INCLUDES_DIRECTORY ${CMAKE_BINARY_DIR}/includes)
@@ -19,8 +22,11 @@ set(CMAKE_CXX_FLAGS_RELEASE "${COMMON_CXX_FLAGS} -O3")
 
 include_directories(${GENERATED_INCLUDES_DIRECTORY})
 include_directories(${AudioToolkit_SOURCE_DIR})
-include_directories(${LIBMPG123_INCLUDE_DIRS})
 include_directories(${LIBLAME_INCLUDE_DIRS})
+include_directories(${LIBMPG123_INCLUDE_DIRS})
+include_directories(${LIBOGG_INCLUDE_DIRS})
+include_directories(${LIBVORBIS_INCLUDE_DIRS})
+include_directories(${LIBVORBISENC_INCLUDE_DIRS})
 
 if(CMAKE_BUILD_TYPE MATCHES "DEBUG")
 	link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG})
@@ -29,6 +35,9 @@ else()
 endif()
 link_directories(${LIBMPG123_LIBRARY_DIRS})
 link_directories(${LIBLAME_LIBRARY_DIRS})
+link_directories(${LIBOGG_LIBRARY_DIRS})
+link_directories(${LIBVORBIS_LIBRARY_DIRS})
+link_directories(${LIBVORBISENC_LIBRARY_DIRS})
 
 ###
 ### libaudio-toolkit
@@ -74,7 +83,7 @@ configure_file(
 )
 
 add_library(libaudiotoolkit SHARED ${AUDIO_SOURCES})
-target_link_libraries(libaudiotoolkit mpg123 mp3lame)
+target_link_libraries(libaudiotoolkit mp3lame mpg123 ogg vorbis vorbisenc)
 
 ###
 ### test audio-toolkit
