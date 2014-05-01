@@ -5,8 +5,7 @@
 #ifndef AUDIO_DECODER_H_
 #define AUDIO_DECODER_H_
 
-#include <fstream>
-#include <memory>
+#include <istream>
 #include <string>
 
 #include <audio/error>
@@ -18,10 +17,28 @@ class buffer;
 namespace codec {
 class decoder {
 public:
-	virtual ~decoder () {}
-public:
-	virtual buffer decode (const std::string &) const throw(error);
-	virtual buffer decode (std::ifstream &) const throw(error) = 0;
+	/// Decodes the given file.
+	/// 
+	/// *Parameters:*
+	/// - `filepath`
+	///   Path of the file to be decoded.
+	///
+	/// *Exceptions:*
+	/// - `com::nealrame::audio::error`
+	virtual buffer decode (const std::string &filepath) const throw(error) final;
+
+	/// Decodes the given stream.
+	///
+	/// *Parameters:*
+	/// - `stream`
+	///   The stream to be decoded.
+	///
+	/// *Exceptions:*
+	/// - `com::nealrame::audio::error`
+	virtual buffer decode (std::istream &stream) const throw(error) final;
+
+protected:
+	virtual buffer decode_ (std::istream &) const throw(error) = 0;
 };
 } /* namespace codec */
 } /* namespace audio */

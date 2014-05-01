@@ -18,6 +18,7 @@ public:
 	enum status {
 		CodecFormatError,
 		CoderNotFound,
+		CodecUnexpectedError,
 		DecoderNotFound,
 		FormatUnhandledChannelCountValueError,
 		FormatUnhandledSampleRateValueError,

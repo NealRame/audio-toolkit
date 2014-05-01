@@ -1,8 +1,8 @@
-// audio_wave_coder.h
-// Created on: March 19, 2014
-//     Author: [NealRame](mailto:contact@nealrame.com)
-#ifndef AUDIO_WAVE_CODER_H_
-#define AUDIO_WAVE_CODER_H_
+/// audio_mp3_coder.h
+/// Created on: April 26, 2014
+///     Author: [NealRame](mailto:contact@nealrame.com)
+#ifndef AUDIO_MP3_CODER_H_
+#define AUDIO_MP3_CODER_H_
 
 #include <audio/codecs/coder>
 
@@ -11,8 +11,8 @@ namespace nealrame {
 namespace audio {
 class buffer;
 namespace codec {
-class WAVE_coder : public coder {
-public:
+class MP3_coder : public coder {
+protected:
 	virtual void encode_ (std::ostream &, const buffer &) const
 		throw(error);
 };
@@ -20,4 +20,4 @@ public:
 } /* namespace audio */
 } /* namespace nealrame */
 } /* namespace com */
-#endif /* AUDIO_WAVE_CODEC_H_ */
+#endif /* AUDIO_MP3_CODEC_H_ */
