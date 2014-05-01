@@ -1,0 +1,36 @@
+# Try to find LibMPG123
+# Once done this will define
+#  LIBMPG123_FOUND - System has LibMPG123
+#  LIBMPG123_INCLUDE_DIRS - The LibMPG123 include directories
+#  LIBMPG123_LIBRARIES - The libraries needed to use LibMPG123
+#  LIBMPG123_DEFINITIONS - Compiler switches required for using LibMPG123
+
+include(FindPackageHandleStandardArgs)
+
+find_package(PkgConfig)
+
+pkg_check_modules(PC_LIBMPG123 QUIET libmpg123)
+set(LIBMPG123_DEFINITIONS ${PC_LIBMPG123_CFLAGS_OTHER})
+
+find_path(
+	LIBMPG123_INCLUDE_DIR mpg123.h
+	HINTS ${PC_LIBMPG123_INCLUDEDIR} ${PC_LIBMPG123_INCLUDE_DIRS}
+)
+
+find_library(
+	LIBMPG123_LIBRARY NAMES mpg123 libmpg123
+	HINTS ${PC_LIBMPG123_LIBDIR} ${PC_LIBMPG123_LIBRARY_DIRS}
+)
+
+set(LIBMPG123_INCLUDE_DIRS ${LIBMPG123_INCLUDE_DIR})
+set(LIBMPG123_LIBRARIES ${LIBMPG123_LIBRARY})
+set(LIBMPG123_LIBRARY_DIRS ${PC_LIBMPG123_LIBRARY_DIRS})
+
+# handle the QUIETLY and REQUIRED arguments and set LIBMPG123_FOUND to TRUE
+# if all listed variables are TRUE
+find_package_handle_standard_args(
+	LibMPG123 DEFAULT_MSG
+	LIBMPG123_LIBRARY LIBMPG123_INCLUDE_DIR
+)
+
+mark_as_advanced(LIBMPG123_INCLUDE_DIR LIBMPG123_LIBRARY)

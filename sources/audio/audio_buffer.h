@@ -35,6 +35,7 @@ public:
 	/// Constructs an audio `buffer` containing the specifided count of
 	/// audio frame.
 	/// Frame are left un-initialized.
+	///
 	/// *Parameters:*
 	/// - `frame_count`
 	///   The requested count of frames.
@@ -67,6 +68,7 @@ public:
 
 public:
 	/// Swaps this `buffer` and the one specified.
+	///
 	/// *Parameters:*
 	/// - `rhs`
 	///   The `buffer` to be swaped with.
@@ -94,6 +96,16 @@ public:
 	format::size_type capacity () const noexcept;
 
 public:
+	/// Returns a pointer to the memory area starting at the specified
+	/// frame.
+	float * data (format::size_type idx) noexcept
+	{ return frames_.data() + idx*format_.channel_count(); }
+
+	/// Returns a pointer to the constant memory area starting at the
+	/// specified frame.
+	const float * data (format::size_type idx) const noexcept 
+	{ return const_cast<buffer *>(this)->data(idx); }
+
 	/// Returns a reference to the audio frame at the given index.
 	/// 
 	/// *Parameters:*
@@ -123,6 +135,7 @@ public:
 	/// *Parameters:*
 	/// - `other`
 	///   A constant reference to a `buffer`.
+	///
 	/// *Exceptions:*
 	/// - `error`
 	///   If the given `buffer` format is different than the format of
@@ -235,6 +248,7 @@ public:
 
 		/// Copy constructor.
 		/// Constructs a `base_frame_iterator` copying an other one.
+		///
 		/// *Paramaters:*
 		/// - `other`
 		///   A constant reference compatible `base_frame_iterator`.
