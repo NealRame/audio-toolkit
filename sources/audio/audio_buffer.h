@@ -293,9 +293,9 @@ public:
 		bool equal (base_frame_iterator<OTHER_FRAME_TYPE> const &rhs) const
 		{ return ptr_ == rhs.ptr_; }
 		ptrdiff_t distance_to (base_frame_iterator const &rhs) const
-		{ return (ptr_ - rhs.ptr_)/channel_count_; }
+		{ return (rhs.ptr_ - ptr_)/ptrdiff_t(channel_count_); }
 		void advance (ptrdiff_t n)
-		{ ptr_ += n*channel_count_; }
+		{ ptr_ += n*ptrdiff_t(channel_count_); }
 		void increment ()
 		{ advance( 1); }
 		void decrement ()
