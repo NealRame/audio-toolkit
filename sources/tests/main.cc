@@ -34,42 +34,44 @@ audio::buffer sine_generator(
 
 audio::buffer load_buffer(const std::string &filename) {
 	std::string extension = filename.substr(filename.length() - 4);
-	std::shared_ptr<audio::codec::decoder> decoder
-		= audio::get_decoder(extension);
+	std::shared_ptr<audio::codec::decoder> decoder =
+		audio::get_decoder(extension);
 	return decoder->decode(filename);
 }
 
 void store_buffer(const std::string &filename, const audio::buffer &buf) {
-	std::shared_ptr<audio::codec::coder> coder = audio::get_coder(".wav");
+	std::string extension = filename.substr(filename.length() - 4);
+	std::shared_ptr<audio::codec::coder> coder =
+		audio::get_coder(extension);
 	coder->encode(filename, buf);
 }
 
 int main (int argc, char **argv) {
 	// std::cout << audio::version::full << std::endl;
 
-	// try {
-	// 	audio::buffer buf =sine_generator(44100, 2, 0.9, 110, 1.);
-	// 	store_buffer("output.wav", buf);
-	// } catch (audio::error &err) {
-	// 	std::cerr << err.status() << std::endl;
-	// 	std::cerr << err.what() << std::endl;
-	// 	return 1;
-	// }
-
 	try {
-		if (argc > 1) {
-			audio::buffer buf = load_buffer(argv[1]);
-			store_buffer("output.wav",buf);
-		}
+		audio::buffer buf =sine_generator(44100, 2, 0.9, 110, 1.);
+		store_buffer("output.mp3", buf);
 	} catch (audio::error &err) {
 		std::cerr << err.status() << std::endl;
 		std::cerr << err.what() << std::endl;
 		return 1;
-	} catch (std::ios_base::failure &err) {
-		std::cerr << err.code() << std::endl;
-		std::cerr << err.what() << std::endl;
-		return 1;
 	}
+
+	// try {
+	// 	if (argc > 1) {
+	// 		audio::buffer buf = load_buffer(argv[1]);
+	// 		store_buffer("output.wav", buf);
+	// 	}
+	// } catch (audio::error &err) {
+	// 	std::cerr << err.status() << std::endl;
+	// 	std::cerr << err.what() << std::endl;
+	// 	return 1;
+	// } catch (std::ios_base::failure &err) {
+	// 	std::cerr << err.code() << std::endl;
+	// 	std::cerr << err.what() << std::endl;
+	// 	return 1;
+	// }
 
 	return 0;
 }

@@ -185,6 +185,7 @@ static void coder_error_handler (const char *fmt, va_list ap) {
 }
 
 struct encode_data {
+	static const size_t frame_count = 1024;
 
 	encode_data (const format &fmt) {
 		if ((gfp = lame_init()) == nullptr) {
@@ -211,9 +212,42 @@ struct encode_data {
 	}
 
 	lame_t gfp;
+	unsigned char mp3buffer[5*frame_count/4 + 7200];
 };
 
+const size_t encode_data::frame_count;
 
-void MP3_coder::encode_ (std::ostream &, const buffer &) const throw(error) {
-	throw error(error::CodecUnexpectedError, "Not implemented!");
+void MP3_coder::encode_ (std::ostream &output, const buffer &buffer) const throw(error) {
+	encode_data lamedata(buffer.format());
+
+	format::size_type total_frame_count = buffer.frame_count();
+	format::size_type frame_index = 0;
+
+	int n;
+
+	while (frame_index < total_frame_count) {
+		format::size_type frame_count =
+			std::min(encode_data::frame_count,
+					total_frame_count - frame_index);
+
+		n = lame_encode_buffer_interleaved_ieee_float(
+			lamedata.gfp,
+			buffer.data(frame_index), frame_count,
+			lamedata.mp3buffer, sizeof(lamedata.mp3buffer)
+		);
+
+		if (n > 0) {
+			output.write((char *)lamedata.mp3buffer, n);
+		}
+
+		frame_index += frame_count;
+	}
+
+	n = lame_encode_flush(
+		lamedata.gfp, 
+		lamedata.mp3buffer, sizeof(lamedata.mp3buffer));
+
+	if (n > 0) {
+		output.write((char *)lamedata.mp3buffer, n);
+	}
 }

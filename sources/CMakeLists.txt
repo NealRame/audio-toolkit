@@ -74,7 +74,7 @@ configure_file(
 )
 
 add_library(libaudiotoolkit SHARED ${AUDIO_SOURCES})
-target_link_libraries(libaudiotoolkit mpg123)
+target_link_libraries(libaudiotoolkit mpg123 mp3lame)
 
 ###
 ### test audio-toolkit
@@ -83,7 +83,7 @@ set(TEST_SOURCES_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 set(TEST_SOURCES ${TEST_SOURCES_DIRECTORY}/main.cc)
 
 add_executable(audiotoolkit ${TEST_SOURCES})
-target_link_libraries(audiotoolkit libaudiotoolkit mp3lame)
+target_link_libraries(audiotoolkit libaudiotoolkit)
 
 ###
 ### Generate Sublime Text project file
