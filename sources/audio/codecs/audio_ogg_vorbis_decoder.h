@@ -1,23 +1,23 @@
-/// audio_ogg_vorbis_coder.h
+/// audio_ogg_vorbis_decoder.h
 /// Created on: May 1, 2014
 ///     Author: [NealRame](mailto:contact@nealrame.com)
-#ifndef AUDIO_OGG_VORBIS_CODER_H_
-#define AUDIO_OGG_VORBIS_CODER_H_
+#ifndef AUDIO_OGG_VORBIS_DECODER_H_
+#define AUDIO_OGG_VORBIS_DECODER_H_
 
-#include <audio/codecs/coder>
+#include <audio/codecs/decoder>
 
 namespace com {
 namespace nealrame {
 namespace audio {
 class buffer;
 namespace codec {
-class OGGVorbis_coder : public coder {
+class OGGVorbis_decoder : public decoder {
 protected:
-	virtual void encode_ (std::ostream &, const buffer &) const
+	virtual buffer decode_ (std::istream &) const
 		throw(error);
 };
 } /* namespace codec */
 } /* namespace audio */
 } /* namespace nealrame */
 } /* namespace com */
-#endif /* AUDIO_OGG_VORBIS_CODER_H_ */
+#endif /* AUDIO_OGG_VORBIS_DECODER_H_ */
