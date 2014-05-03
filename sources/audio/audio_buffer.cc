@@ -65,12 +65,67 @@ buffer::frame buffer::at (format::size_type idx) {
 	return frame(it, it + channel_count);
 }
 
-void buffer::append (const buffer &rhs) throw(error) {
-	if (format_ != rhs.format()) {
-		error::raise(error::FormatMismatchedError);
+float * buffer::data (format::size_type index) noexcept {
+	return frames_.data() + index*format_.channel_count();
+}
+
+const float * buffer::data (format::size_type index) const noexcept {
+	return const_cast<buffer *>(this)->data(index);
+}
+
+format::size_type buffer::copy (float *pcm, format::size_type count, format::size_type offset) const {
+	auto channel_count = format_.channel_count();
+
+	offset = std::max(offset*channel_count, frames_.size());
+	count = std::min(count*channel_count, frames_.size() - offset);
+
+	auto it = frames_.begin() + offset, end = it + count;
+	while (it != end) {
+		*pcm++ = *it++;
 	}
-	auto it = set_frame_count(frame_count() + rhs.frame_count());
-	std::copy(rhs.begin(), rhs.end(), it);
+
+	return count;
+}
+
+format::size_type buffer::copy (float **pcm, format::size_type count, format::size_type offset) const {
+	auto channel_count = format_.channel_count();
+
+	offset = std::min(offset*channel_count, frames_.size());
+	count = std::min(count*channel_count, frames_.size() - offset);
+
+	auto it = frames_.begin() + offset, end = it + count;
+	while (it != end) {
+		for (auto i = 0; i < channel_count; ++i) {
+			*pcm[i]++ = *it++;
+		}
+	}
+	return count;
+}
+
+void buffer::append (const float *pcm, format::size_type frame_count) {
+	for (int i = 0, count = format_.channel_count()*frame_count; i < count; ++i) {
+		frames_.push_back(pcm[i]);
+	}
+}
+
+void buffer::append (const float * const *pcm, format::size_type frame_count) {
+	for (format::size_type j = 0; j < frame_count; ++j) {
+		for (format::size_type i = 0, count = format_.channel_count(); i < count; ++i) {
+			frames_.push_back(pcm[i][j]);
+		}
+	}
+}
+
+void buffer::append (const_frame frame) {
+	for (auto sample: frame) {
+		frames_.push_back(sample);
+	}
+}
+
+void buffer::append (const buffer &rhs) throw(error) {
+	for (auto sample: rhs.frames_) {
+		frames_.push_back(sample);
+	}
 }
 
 void buffer::reserve (double duration) {

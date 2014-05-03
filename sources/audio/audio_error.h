@@ -31,7 +31,7 @@ public:
 		throw(error) {
 		throw error(s, std::string());
 	}
-	static void raise (enum status s, char *msg)
+	static void raise (enum status s, const char *msg)
 		throw(error) {
 		throw error(s, msg);
 	}

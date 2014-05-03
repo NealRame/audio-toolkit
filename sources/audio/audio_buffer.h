@@ -96,16 +96,6 @@ public:
 	format::size_type capacity () const noexcept;
 
 public:
-	/// Returns a pointer to the memory area starting at the specified
-	/// frame.
-	float * data (format::size_type idx) noexcept
-	{ return frames_.data() + idx*format_.channel_count(); }
-
-	/// Returns a pointer to the constant memory area starting at the
-	/// specified frame.
-	const float * data (format::size_type idx) const noexcept 
-	{ return const_cast<buffer *>(this)->data(idx); }
-
 	/// Returns a reference to the audio frame at the given index.
 	/// 
 	/// *Parameters:*
@@ -124,7 +114,82 @@ public:
 	const_frame operator[] (format::size_type idx) const
 	{ return at(idx); }
 
+	/// Returns a pointer to the memory area starting at the specified
+	/// frame.
+	///
+	/// *Parameters:*
+	/// - `index`
+	///   The index of the frame from which you wish to access the raw
+	///   data buffer
+	float * data (format::size_type index) noexcept;
+
+	/// Returns a pointer to the constant memory area starting at the
+	/// specified frame.
+	///
+	/// *Parameters:*
+	/// - `index`
+	///   The index of the frame from which you wish to access the raw
+	///   data buffer
+	const float * data (format::size_type index) const noexcept;
+
+	/// Copy the specified count of frames into the given output
+	/// interleaved raw buffer.
+	///
+	/// *Parameters:*
+	/// - `pcm`
+	///   The output interleaved raw buffer.
+	/// - `frame_count`
+	///   The requested count of frames to be copied.
+	format::size_type copy (
+			float *pcm,
+			format::size_type frame_count,
+			format::size_type offset = 0) const;
+
+	/// Copy the specified count of frames into the given output
+	/// deinterleaved raw buffer.
+	///
+	/// *Parameters:*
+	/// - `pcm`
+	///   The output deinterleaved raw buffer. A (**float) where the first
+	///   index is the channel, and the second is the sample index.
+	/// - `frame_count`
+	///   The requested count of frames to be copied.
+	format::size_type copy (
+			float **pcm, 
+			format::size_type frame_count, 
+			format::size_type offset = 0) const;
+
 public:
+	/// Append the given interleaved raw buffer to this `buffer`.
+	///
+	/// *Parameters:*
+	/// - `pcm`
+	///   An array of interleaved samples.
+	/// - `frame_count`
+	///   The count of frames to be appended.
+	void append (const float *pcm, format::size_type frame_count);
+	
+	/// Append the given deinterleaved raw buffer to this `buffer`.
+	///
+	/// *Parameters:*
+	/// - `pcm`
+	///   A (**float) where the first index is the channel, and the second
+	///   is the sample index.
+	void append (const float * const *pcm, format::size_type frame_count);
+	
+	/// Append the given `const_frame` to this `buffer`.
+	///
+	/// *Parameters:*
+	/// - `frame`
+	///   The frame to be appended.
+	///
+	/// *Exceptions:*
+	/// - `error`
+	///   If the count of channels of the given `const_frame` is different
+	///   than the count of channel of this `buffer` an `error` exeception
+	///   with status `FormatMismatched` will be raised.
+	void append (const_frame frame);
+	
 	/// Append the given `sequence` to this `buffer`.
 	///
 	/// If the required capacity to append the given `buffer`is greater
@@ -139,8 +204,8 @@ public:
 	/// *Exceptions:*
 	/// - `error`
 	///   If the given `buffer` format is different than the format of
-	/// this `buffer` an `error` exeception with status `FormatMismatched`
-	/// will be raised.
+	///   this `buffer` an `error` exeception with status `FormatMismatched`
+	///   will be raised.
 	void append (const buffer &other) throw(error);
 
 	/// Sets this audio `buffer`'s capacity so that it can contain enough
@@ -152,7 +217,7 @@ public:
 	///
 	/// *Parameters:*
 	/// - `duration`
-	///   the requested duration.
+	///   The requested duration.
 	void reserve (double duration);
 	/// Sets the capacity of this audio `buffer` so that it can contain as
 	/// many audio frames as specified.
@@ -163,7 +228,7 @@ public:
 	///
 	/// *Parameters:$
 	/// - `frame_count`
-	///   the requested count of frames.
+	///   The requested count of frames.
 	void reserve (format::size_type frame_count);
 
 	/// Sets count of audio frames of this `buffer` so that its duration
@@ -293,9 +358,9 @@ public:
 		bool equal (base_frame_iterator<OTHER_FRAME_TYPE> const &rhs) const
 		{ return ptr_ == rhs.ptr_; }
 		ptrdiff_t distance_to (base_frame_iterator const &rhs) const
-		{ return (ptr_ - rhs.ptr_)/channel_count_; }
+		{ return (rhs.ptr_ - ptr_)/ptrdiff_t(channel_count_); }
 		void advance (ptrdiff_t n)
-		{ ptr_ += n*channel_count_; }
+		{ ptr_ += n*ptrdiff_t(channel_count_); }
 		void increment ()
 		{ advance( 1); }
 		void decrement ()
