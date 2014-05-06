@@ -8,29 +8,15 @@
 
 #include <audio/version>
 
-#include <boost/math/constants/constants.hpp>
+#include <audio/generators/noise>
+#include <audio/generators/triangle>
+#include <audio/generators/sawtooth>
+#include <audio/generators/square>
+#include <audio/generators/sine>
+
+#include <audio/generator>
 
 using namespace com::nealrame;
-
-audio::sequence sine_generator(
-	audio::format::size_type frame_rate, 
-	audio::format::size_type channel_count, 
-	float amplitude, float freq, double duration) {
-	audio::sequence seq(audio::format(channel_count, frame_rate));
-
-	auto it = seq.set_duration(1.);
-
-	float step = 1./frame_rate;
-	float t = 0;
-	float c = boost::math::constants::two_pi<float>()*freq;
-
-	std::for_each(it, seq.end(), [amplitude, c, step, &t](audio::sequence::frame frame) {
-		std::fill(frame.begin(), frame.end(), amplitude*sinf(t*c));
-		t += step;
-	});
-
-	return seq;
-}
 
 audio::sequence load_buffer(const std::string &filename) {
 	std::string extension = filename.substr(filename.length() - 4);
@@ -47,27 +33,37 @@ void store_buffer(const std::string &filename, const audio::sequence &seq) {
 }
 
 int main (int argc, char **argv) {
-	// std::cout << audio::version::full << std::endl;
-
-	// try {
-	// 	audio::sequence seq =sine_generator(44100, 2, 0.9, 110, 1.);
-	// 	store_buffer("output.ogg", seq);
-	// } catch (audio::error &err) {
-	// 	std::cerr << err.status() << std::endl;
-	// 	std::cerr << err.what() << std::endl;
-	// 	return 1;
-	// }
+	std::cout << audio::version::full << std::endl;
 
 	try {
-		if (argc > 1) {
-			audio::sequence seq = load_buffer(argv[1]);
-			store_buffer("output.wav", seq);
-		}
+		audio::generator<audio::generators::noise> noise(audio::format(2, 44100), 0.8);
+		audio::generator<audio::generators::sawtooth> sawtooth(audio::format(2, 44100), 0., 0.8, 110.);
+		audio::generator<audio::generators::sine> sine(audio::format(2, 44100), 0., 0.8, 110.);
+		audio::generator<audio::generators::square> square(audio::format(2, 44100), 0., 0.8, 110.);
+		audio::generator<audio::generators::triangle> triangle(audio::format(2, 44100), 0., 0.8, 110);
+
+		store_buffer("noise.wav", noise.sequence(2.));
+		store_buffer("sawtooth.wav", sawtooth.sequence(2.));
+		store_buffer("sine.wav", sine.sequence(2.));
+		store_buffer("square.wav", square.sequence(2.));
+		store_buffer("triangle.wav", triangle.sequence(2.));
+		
 	} catch (audio::error &err) {
 		std::cerr << err.status() << std::endl;
 		std::cerr << err.what() << std::endl;
 		return 1;
 	}
+
+	// try {
+	// 	if (argc > 1) {
+	// 		audio::sequence seq = load_buffer(argv[1]);
+	// 		store_buffer("output.wav", seq);
+	// 	}
+	// } catch (audio::error &err) {
+	// 	std::cerr << err.status() << std::endl;
+	// 	std::cerr << err.what() << std::endl;
+	// 	return 1;
+	// }
 
 	return 0;
 }
