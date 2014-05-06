@@ -159,10 +159,10 @@ buffer MP3_decoder::decode_(std::istream &input) const
 
 #if defined(DEBUG)
 void coder_debug_handler (const char *, va_list ap) {
-	fvprintf(stderr, "%s\n", ap);
+	vfprintf(stderr, "%s\n", ap);
 }
 void coder_message_handler (const char *, va_list ap) {
-	fvprintf(stdout, "%s\n", ap);
+	vfprintf(stdout, "%s\n", ap);
 }
 #else
 void coder_debug_handler (const char *, va_list) {}

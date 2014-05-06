@@ -11,7 +11,7 @@
 	{
 		"tab_size": 8,
 		"translate_tabs_to_spaces": false,
-		"sublimeclang_options": [ @INCLUDE_DIRECTORIES@ ],
+		"sublimeclang_options": [ @SUBLIBME_CLANG_FLAGS@ ],
 		"sublimeclang_additional_language_options": {
 			"c++": [ @CXX_FLAGS@ ]
 		}

@@ -91,8 +91,11 @@ target_link_libraries(audiotoolkit libaudiotoolkit)
 
 # get includes directories list
 get_property(DIRS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+get_directory_property(DEFS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} COMPILE_DEFINITIONS)
 
 # only transform COMMON_CXX_FLAGS into a list
 string(REGEX MATCHALL "[^ ]+" FLAGS ${COMMON_CXX_FLAGS})
 
-generate_sublime_text_project("${FLAGS}" "${DIRS}")
+if(${CMAKE_GENERATOR} MATCHES "Unix Makefiles")
+	generate_sublime_text_project("${FLAGS}" "${DEFS}" "${DIRS}")
+endif()
