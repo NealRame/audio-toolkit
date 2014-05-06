@@ -13,7 +13,7 @@ sequence::sequence (const class format &format) noexcept :
 
 sequence::sequence (const class format &format, format::size_type frame_count) :
 	format_(format),
-	frames_(frame_count) {
+	frames_(2*frame_count) {
 }
 
 sequence::sequence (const class format &format, double duration) :
