@@ -4,10 +4,7 @@ endif()
 
 set(__generate_sublime_text_project YES)
 
-function(generate_sublime_text_project _cxx_flags _include_directories)
-
-	# message("-- _cxx_flag: ${_cxx_flags}")
-	# message("-- _include_directories: ${_include_directories}")
+function(generate_sublime_text_project _cxx_flags _definitions _include_directories)
 
 	if(APPLE)
 		set(_include_directories
@@ -23,8 +20,25 @@ function(generate_sublime_text_project _cxx_flags _include_directories)
 		)
 	endif()
 
-	# message("-- _cxx_flag: ${_cxx_flags}")
 	# message("-- _include_directories: ${_include_directories}")
+	# message("-- _definitions: ${_definitions}")
+	# message("-- _cxx_flag: ${_cxx_flags}")
+
+	foreach(DIR ${_include_directories})
+		if(SUBLIBME_CLANG_FLAGS)
+			set(SUBLIBME_CLANG_FLAGS "${SUBLIBME_CLANG_FLAGS}, \"-I${DIR}\"")
+		else()
+			set(SUBLIBME_CLANG_FLAGS "\"-I${DIR}\"")
+		endif()
+	endforeach()
+
+	foreach(DEF ${_definitions})
+			if (SUBLIBME_CLANG_FLAGS)
+				set(SUBLIBME_CLANG_FLAGS "${SUBLIBME_CLANG_FLAGS}, \"-D${DEF}\"")
+			else()
+				set(SUBLIBME_CLANG_FLAGS "\"-D${DEF}\"")
+			endif()
+	endforeach()
 
 	foreach(FLAG ${_cxx_flags})
 		if (CXX_FLAGS)
@@ -34,16 +48,8 @@ function(generate_sublime_text_project _cxx_flags _include_directories)
 		endif()
 	endforeach()
 
-	foreach(DIR ${_include_directories})
-		if(INCLUDE_DIRECTORIES)
-			set(INCLUDE_DIRECTORIES "${INCLUDE_DIRECTORIES}, \"-I${DIR}\"")
-		else()
-			set(INCLUDE_DIRECTORIES "\"-I${DIR}\"")
-		endif()
-	endforeach()
-
-	# message("-- CXX_FLAGS: CXX_FLAGS ${CXX_FLAGS}")
-	# message("-- INCLUDE_DIRECTORIES: ${INCLUDE_DIRECTORIES}")
+	message("-- SUBLIBME_CLANG_FLAGS: ${SUBLIBME_CLANG_FLAGS}")
+	message("-- CXX_FLAGS: ${CXX_FLAGS}")
 
 	configure_file(
 		${CMAKE_SOURCE_DIR}/project/cmake/SublimeText.cmake.in
