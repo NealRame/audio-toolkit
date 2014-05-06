@@ -13,7 +13,7 @@ std::ostream & com::nealrame::audio::operator<< (std::ostream &stream, format fm
 	return stream;
 }
 
-std::ostream & com::nealrame::audio::operator<< (std::ostream &stream, buffer::const_frame frame) {
+std::ostream & com::nealrame::audio::operator<< (std::ostream &stream, sequence::const_frame frame) {
 	std::ostream output(stream.rdbuf());
 	output.setf(
 		std::ios_base::dec

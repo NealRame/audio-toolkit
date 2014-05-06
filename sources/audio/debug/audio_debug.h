@@ -6,7 +6,7 @@
 #define AUDIO_DEBUG_H_
 
 #include <ostream>
-#include <audio/buffer>
+#include <audio/sequence>
 #include <audio/format>
 
 namespace com {
@@ -14,7 +14,7 @@ namespace nealrame {
 namespace audio {
 
 std::ostream & operator<< (std::ostream &stream, format fmt);
-std::ostream & operator<< (std::ostream &stream, buffer::const_frame frame);
+std::ostream & operator<< (std::ostream &stream, sequence::const_frame frame);
 
 } // namespace audio
 } // namespace nealrame

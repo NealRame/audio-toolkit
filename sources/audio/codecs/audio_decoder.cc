@@ -6,16 +6,16 @@
 #include <fstream>
 
 #include "audio_decoder.h"
-#include "../audio_buffer.h"
+#include "../audio_sequence.h"
 
 using namespace com::nealrame::audio;
 
-buffer codec::decoder::decode (const std::string &filename) const throw(error) {
+sequence codec::decoder::decode (const std::string &filename) const throw(error) {
 	std::ifstream in(filename, std::fstream::in|std::fstream::binary);
 	return decode_(in);
 }
 
-buffer codec::decoder::decode (std::istream &stream) const throw(error) {
+sequence codec::decoder::decode (std::istream &stream) const throw(error) {
 	std::istream in(stream.rdbuf());
 	return decode_(in);
 }

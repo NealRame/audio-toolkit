@@ -9,11 +9,11 @@
 namespace com {
 namespace nealrame {
 namespace audio {
-class buffer;
+class sequence;
 namespace codec {
 class WAVE_coder : public coder {
 public:
-	virtual void encode_ (std::ostream &, const buffer &) const
+	virtual void encode_ (std::ostream &, const sequence &) const
 		throw(error);
 };
 } /* namespace codec */
