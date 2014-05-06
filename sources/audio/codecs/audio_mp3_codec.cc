@@ -5,7 +5,7 @@
 #include "audio_mp3_coder.h"
 #include "audio_mp3_decoder.h"
 
-#include <audio/buffer>
+#include <audio/sequence>
 #include <audio/format>
 
 #include <algorithm>
@@ -103,7 +103,7 @@ format read_format (decoder_data &mpgdata) {
 	return format(channel_count, sampling_rate);
 }
 
-buffer read_frames (decoder_data &mpgdata, const format &fmt) {
+sequence read_frames (decoder_data &mpgdata, const format &fmt) {
 	int len = mpg123_length(mpgdata.handle);
 	size_t outblock_size = mpg123_outblock(mpgdata.handle);
 
@@ -111,10 +111,10 @@ buffer read_frames (decoder_data &mpgdata, const format &fmt) {
 	format::size_type max_outgoing_frame_count
 		= outblock_size/(sizeof(float)*fmt.channel_count());
 
-	buffer buf(fmt);
+	sequence seq(fmt);
 
 	if (len > 0) {
-		buf.reserve(static_cast<format::size_type>(len));
+		seq.reserve(static_cast<format::size_type>(len));
 	}
 	
 	int err;
@@ -122,14 +122,14 @@ buffer read_frames (decoder_data &mpgdata, const format &fmt) {
 	
 	do {
 		// resize the buffer so it can receive new frames
-		buf.set_frame_count(frame_count + max_outgoing_frame_count);
+		seq.set_frame_count(frame_count + max_outgoing_frame_count);
 
 		err = mpg123_read(mpgdata.handle,
-			(unsigned char *)(buf.data(frame_count)),
+			(unsigned char *)(seq.data(frame_count)),
 			outblock_size, &done);
 
 		frame_count += done/(sizeof(float)*fmt.channel_count());
-		buf.set_frame_count(frame_count);
+		seq.set_frame_count(frame_count);
 		
 		if (err == MPG123_NEED_MORE) {
 			if (! (feed(mpgdata) > 0)) {
@@ -143,10 +143,10 @@ buffer read_frames (decoder_data &mpgdata, const format &fmt) {
 				mpg123_strerror(mpgdata.handle));
 	}
 
-	return buf;
+	return seq;
 }
 
-buffer MP3_decoder::decode_(std::istream &input) const
+sequence MP3_decoder::decode_(std::istream &input) const
 	throw(error) {
 	decoder_data mpgdata(input);
 	format fmt = read_format(mpgdata);
@@ -217,10 +217,10 @@ struct encode_data {
 
 const size_t encode_data::frame_count;
 
-void MP3_coder::encode_ (std::ostream &output, const buffer &buffer) const throw(error) {
-	encode_data lamedata(buffer.format());
+void MP3_coder::encode_ (std::ostream &output, const sequence &seq) const throw(error) {
+	encode_data lamedata(seq.format());
 
-	format::size_type total_frame_count = buffer.frame_count();
+	format::size_type total_frame_count = seq.frame_count();
 	format::size_type frame_index = 0;
 
 	int n;
@@ -232,7 +232,7 @@ void MP3_coder::encode_ (std::ostream &output, const buffer &buffer) const throw
 
 		n = lame_encode_buffer_interleaved_ieee_float(
 			lamedata.gfp,
-			buffer.data(frame_index), frame_count,
+			seq.data(frame_index), frame_count,
 			lamedata.mp3buffer, sizeof(lamedata.mp3buffer)
 		);
 

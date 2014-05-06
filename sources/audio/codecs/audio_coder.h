@@ -13,22 +13,22 @@
 namespace com {
 namespace nealrame {
 namespace audio {
-class buffer;
+class sequence;
 namespace codec {
 class coder {
 public:
-	/// Encode the given buffer to the given filename.
-	/// See `buffer` documentation for more details about `buffer`.
-	virtual void encode (const std::string &, const buffer &) const
+	/// Encode the given sequence to the given filename.
+	/// See `sequence` documentation for more details about `sequence`.
+	virtual void encode (const std::string &, const sequence &) const
 		throw(error) final;
 	
-	/// Encode the given buffer to the given output stream.
-	/// See `buffer` documentation for more details about `buffer`.
-	virtual void encode (std::ostream &, const buffer &) const
+	/// Encode the given sequence to the given output stream.
+	/// See `sequence` documentation for more details about `sequence`.
+	virtual void encode (std::ostream &, const sequence &) const
 		throw(error) final;
 
 protected:
-	virtual void encode_ (std::ostream &, const buffer &) const 
+	virtual void encode_ (std::ostream &, const sequence &) const 
 		throw(error) = 0;
 };
 } /* namespace codec */

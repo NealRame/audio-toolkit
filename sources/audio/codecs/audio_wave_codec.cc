@@ -10,7 +10,7 @@
 #include <cstring>
 #include <istream>
 
-#include <audio/buffer>
+#include <audio/sequence>
 #include <audio/error>
 #include <audio/sample>
 
@@ -139,78 +139,47 @@ inline void read (std::istream &in, T &data) {
 
 template <typename T>
 inline void read (std::istream &in, std::vector<T> &pcm_buf) {
-#if defined (DEBUG) && defined(DEBUG_WAVE_DECODER)
-	std::cerr << "pre-read buffer size is " << pcm_buf.size() << " sample(s)" << std::endl;
-#endif
 	in.read(reinterpret_cast<char *>(pcm_buf.data()), sizeof(T)*pcm_buf.size());
 	pcm_buf.resize(in.gcount()/sizeof(T));
-#if defined (DEBUG) && defined(DEBUG_WAVE_DECODER)
-	std::cerr << "post-read buffer size is " << pcm_buf.size() << " sample(s)" << std::endl;
-#endif
 }
 
 template <typename T>
 inline 
-format::size_type fill_audio_buffer (const std::vector<T> &pcm_buf, buffer &buffer) {
-	format::size_type channel_count = buffer.format().channel_count();
+format::size_type fill_audio_buffer (const std::vector<T> &pcm_buf, sequence &seq) {
+	format::size_type channel_count = seq.format().channel_count();
 	format::size_type frame_count = pcm_buf.size()/channel_count;
-	format::size_type total_frame_count = buffer.frame_count() + frame_count;
+	format::size_type total_frame_count = seq.frame_count() + frame_count;
 
 	auto it = pcm_buf.begin();
 	std::for_each(
-		buffer.set_frame_count(total_frame_count), buffer.end(),
-		[&it](buffer::frame frame) {
-#if defined(DEBUG) && defined(DEBUG_WAVE_DECODER)
-			std::cerr << "[0]=" << *it << ", [1]=" << *(it+1) << std::endl;
-#endif
+		seq.set_frame_count(total_frame_count), seq.end(),
+		[&it](sequence::frame frame) {
 			for (float &sample: frame) {
 				sample = value_to_sample<T>(*it++);
 			}
-#if defined(DEBUG) && defined(DEBUG_WAVE_DECODER)
-			std::cerr << frame << std::endl;
-#endif
 		}
 	);
-
-#if defined (DEBUG) && defined(DEBUG_WAVE_DECODER)
-	std::cerr << "got " << frame_count << " audio frame(s)"<< std::endl;
-#endif
-
 	return frame_count;
 }
 
 template <typename T>
-void read_data_chunk (std::istream &in, buffer &audio_buffer) {
-	format::size_type channel_count = audio_buffer.format().channel_count();
-	format::size_type frame_count = audio_buffer.capacity();
+void read_data_chunk (std::istream &in, sequence &seq) {
+	format::size_type channel_count = seq.format().channel_count();
+	format::size_type frame_count = seq.capacity();
 
 	std::vector<T> pcm_buffer;
 	pcm_buffer.reserve(1024*channel_count);
 
-#if defined (DEBUG) && defined(DEBUG_WAVE_DECODER)
-	std::cerr << "<read data chunk sizeof(sample)=" << sizeof(T) << ">" << std::endl;
-#endif
-
 	while (frame_count > 0 && ! in.eof()) {
-#if defined (DEBUG) && defined(DEBUG_WAVE_DECODER)
-	std::cerr << "--------" << std::endl;
-	std::cerr << "audio frame remaining " << frame_count << std::endl;
-#endif
 		format::size_type n = std::min<format::size_type>(frame_count, 1024);
-#if defined (DEBUG) && defined(DEBUG_WAVE_DECODER)
-	std::cerr << "will read " << n << " audio frame(s)"<< std::endl;
-#endif
+
 		pcm_buffer.resize(n*channel_count);
 		read(in, pcm_buffer);
-
-		frame_count -= fill_audio_buffer<T>(pcm_buffer, audio_buffer);
-#if defined (DEBUG) && defined(DEBUG_WAVE_DECODER)
-	std::cerr << "--------" << std::endl;
-#endif
+		frame_count -= fill_audio_buffer<T>(pcm_buffer, seq);
 	}
 }
 
-buffer
+sequence
 WAVE_decoder::decode_ (std::istream &in) const throw(error) {
 	RIFFHeaderChunk header_chunk;
 	read(in, header_chunk);
@@ -224,37 +193,26 @@ WAVE_decoder::decode_ (std::istream &in) const throw(error) {
 	format::size_type frame_count =
 		data_chunk.size/format_chunk.bytePerFrame;
 
-#if defined (DEBUG) && defined(DEBUG_WAVE_DECODER)
-	std::cerr << "audio frame count: " << frame_count << std::endl;
-#endif
-
-	buffer audio_buffer(format(
+	sequence seq(format(
 		format_chunk.channelCount,
 		format_chunk.sampleRate));
 
-#if defined (DEBUG) && defined(DEBUG_WAVE_DECODER)
-	std::cerr << "audio buffer created!" << std::endl;
-#endif
-
-	audio_buffer.reserve(frame_count);
+	seq.reserve(frame_count);
 
 	switch (format_chunk.bitPerSample) {
 	case 8:
-		read_data_chunk<int8_t>(in, audio_buffer);
+		read_data_chunk<int8_t>(in, seq);
 		break;
 
 	case 16:
-#if defined (DEBUG) && defined(DEBUG_WAVE_DECODER)
-	std::cerr << "16 bit per sample!" << std::endl;
-#endif
-		read_data_chunk<int16_t>(in, audio_buffer);
+		read_data_chunk<int16_t>(in, seq);
 		break;
 
 	default:
 		throw error(error::FormatUnhandledSampleQuantificationValueError);
 	}
 
-	return audio_buffer;
+	return seq;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -262,13 +220,13 @@ WAVE_decoder::decode_ (std::istream &in) const throw(error) {
 //////////////////////////////////////////////////////////////////////////////
 
 template <typename T>
-inline void write (std::ostream &, const buffer &);
+inline void write (std::ostream &, const sequence &);
 
 template <>
-inline void write<RIFFHeaderChunk> (std::ostream &out, const buffer &audio_buffer) {
-	format format = audio_buffer.format();
+inline void write<RIFFHeaderChunk> (std::ostream &out, const sequence &seq) {
+	format format = seq.format();
 
-	unsigned int frame_count = audio_buffer.frame_count();
+	unsigned int frame_count = seq.frame_count();
 	unsigned int channel_count = format.channel_count();
 
 	RIFFHeaderChunk chunk;
@@ -286,8 +244,8 @@ inline void write<RIFFHeaderChunk> (std::ostream &out, const buffer &audio_buffe
 }
 
 template <>
-inline void write<WaveFormatChunk> (std::ostream &out, const buffer &audio_buffer) {
-	format format = audio_buffer.format();
+inline void write<WaveFormatChunk> (std::ostream &out, const sequence &seq) {
+	format format = seq.format();
 
 	unsigned int channel_count = format.channel_count();
 	unsigned int sample_rate = format.sample_rate();
@@ -295,8 +253,8 @@ inline void write<WaveFormatChunk> (std::ostream &out, const buffer &audio_buffe
 	WaveFormatChunk chunk;
 	memcpy(chunk.id, "fmt ", 4);
 	chunk.size = sizeof(WaveFormatChunk) 
-		- sizeof(chunk.id)
-		- sizeof(chunk.size);
+			- sizeof(chunk.id)
+			- sizeof(chunk.size);
 	chunk.audioFormat = 1;
 	chunk.channelCount = channel_count;
 	chunk.sampleRate = sample_rate;
@@ -310,15 +268,11 @@ inline void write<WaveFormatChunk> (std::ostream &out, const buffer &audio_buffe
 }
 
 template <>
-inline void write<WaveDataChunk> (std::ostream &out, const buffer &audio_buffer) {
-	format format = audio_buffer.format();
+inline void write<WaveDataChunk> (std::ostream &out, const sequence &seq) {
+	format format = seq.format();
 
-	unsigned int frame_count = audio_buffer.frame_count();
+	unsigned int frame_count = seq.frame_count();
 	unsigned int channel_count = format.channel_count();
-
-#if defined (DEBUG) && defined(DEBUG_WAVE_CODER)
-	unsigned int frame_index = 0;
-#endif
 
 	WaveDataChunk chunk;
 	memcpy(chunk.id, "data", 4);
@@ -328,25 +282,18 @@ inline void write<WaveDataChunk> (std::ostream &out, const buffer &audio_buffer)
 
 	out.write(reinterpret_cast<char *>(&chunk), sizeof(WaveDataChunk));
 
-	for (auto frame: audio_buffer) {
-
-#if defined (DEBUG) && defined(DEBUG_WAVE_CODER)
-		std::cerr << std::setw(6) << frame_index++ << ":" << frame << std::endl;
-#endif
+	for (auto frame: seq) {
 		// I wish i could use an input iterator here ...
 		for (float sample: frame) {
 			int16_t value = sample_to_value<int16_t>(sample);
 			out.write(reinterpret_cast<char *>(&value), sizeof(value));
 		}
-#if defined (DEBUG) && defined(DEBUG_WAVE_CODEC)
-		std::cerr << std::endl;
-#endif
 	}
 }
 
-void WAVE_coder::encode_ (std::ostream &out, const buffer &buffer) const
+void WAVE_coder::encode_ (std::ostream &out, const sequence &seq) const
 	throw(error) {
-	write<RIFFHeaderChunk>(out, buffer);
-	write<WaveFormatChunk>(out, buffer);
-	write<WaveDataChunk>  (out, buffer);
+	write<RIFFHeaderChunk>(out, seq);
+	write<WaveFormatChunk>(out, seq);
+	write<WaveDataChunk>  (out, seq);
 }

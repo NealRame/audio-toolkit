@@ -9,11 +9,11 @@
 namespace com {
 namespace nealrame {
 namespace audio {
-class buffer;
+class sequence;
 namespace codec {
 class MP3_decoder: public decoder {
 protected:
-	virtual buffer decode_ (std::istream &) const throw(error);
+	virtual sequence decode_ (std::istream &) const throw(error);
 };
 } /* namespace codec */
 } /* namespace audio */

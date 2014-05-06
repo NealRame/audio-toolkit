@@ -13,7 +13,7 @@
 namespace com {
 namespace nealrame {
 namespace audio {
-class buffer;
+class sequence;
 namespace codec {
 class decoder {
 public:
@@ -25,7 +25,7 @@ public:
 	///
 	/// *Exceptions:*
 	/// - `com::nealrame::audio::error`
-	virtual buffer decode (const std::string &filepath) const throw(error) final;
+	virtual sequence decode (const std::string &filepath) const throw(error) final;
 
 	/// Decodes the given stream.
 	///
@@ -35,10 +35,10 @@ public:
 	///
 	/// *Exceptions:*
 	/// - `com::nealrame::audio::error`
-	virtual buffer decode (std::istream &stream) const throw(error) final;
+	virtual sequence decode (std::istream &stream) const throw(error) final;
 
 protected:
-	virtual buffer decode_ (std::istream &) const throw(error) = 0;
+	virtual sequence decode_ (std::istream &) const throw(error) = 0;
 };
 } /* namespace codec */
 } /* namespace audio */

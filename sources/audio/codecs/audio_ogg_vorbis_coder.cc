@@ -5,7 +5,7 @@
 #include "audio_ogg_vorbis_coder.h"
 #include "audio_ogg_vorbis_decoder.h"
 
-#include <audio/buffer>
+#include <audio/sequence>
 #include <audio/format>
 
 #include <algorithm>
@@ -153,8 +153,8 @@ public:
 
 	// Reads at most the specified count of frames from this input vorbis
 	// stream and append them to the given `buffer`.
-	void read (buffer &buf, format::size_type frame_count) {
-		if (get_format() != buf.format()) {
+	void read (sequence &seq, format::size_type frame_count) {
+		if (get_format() != seq.format()) {
 			error::raise(error::CodecFormatError,
 					"Vorbis stream format differs from buffer format");
 		}
@@ -166,7 +166,7 @@ public:
 				count = std::min<format::size_type>(count, frame_count);
 
 				vorbis_synthesis_read(&dsp_, count);
-				buf.append(pcm, count);
+				seq.append(pcm, count);
 
 				frame_count -= count;
 			} else {
@@ -176,9 +176,9 @@ public:
 	}
 
 	// Reads all data from this vorbis input stream to the given buffer.
-	void read (buffer &buf) {
+	void read (sequence &seq) {
 		while (! ogg_stream_.eof()) {
-			read(buf, 1024);
+			read(seq, 1024);
 		}
 	}
 
@@ -243,13 +243,13 @@ private:
 
 }; // namespace ogg_vorbis__
 
-buffer OGGVorbis_decoder::decode_ (std::istream &input) const throw(error) {
+sequence OGGVorbis_decoder::decode_ (std::istream &input) const throw(error) {
 	ogg_vorbis__::vorbis_input_stream ov_decoder(input);
 
-	buffer buf(ov_decoder.get_format());
-	ov_decoder.read(buf);
+	sequence seq(ov_decoder.get_format());
+	ov_decoder.read(seq);
 
-	return buf;
+	return seq;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -354,19 +354,19 @@ public:
 		ogg_stream_.flush();
 	}
 
-	void write (const buffer &buf) {
-		if (get_format() != buf.format()) {
+	void write (const sequence &seq) {
+		if (get_format() != seq.format()) {
 			error::raise(error::CodecFormatError,
-					"Vorbis stream format differs from buffer format");
+					"Vorbis stream format differs from sequence format");
 		}
 
-		format::size_type remaining_frame_count = buf.frame_count();
+		format::size_type remaining_frame_count = seq.frame_count();
 		format::size_type frame_index = 0;
 
 		while (remaining_frame_count > 0) {
 			auto frame_count = std::min(remaining_frame_count, format::size_type(1024));
 
-			buf.copy(vorbis_analysis_buffer(&dsp_, frame_count), frame_count, frame_index);
+			seq.copy(vorbis_analysis_buffer(&dsp_, frame_count), frame_count, frame_index);
 			encode_frames_(frame_count);
 
 			remaining_frame_count -= frame_count;
@@ -437,8 +437,8 @@ private:
 
 }; // namespace ogg_vorbis__
 
-void OGGVorbis_coder::encode_ (std::ostream &output, const buffer &buffer) const
+void OGGVorbis_coder::encode_ (std::ostream &output, const sequence &seq) const
 	throw(error) {
-	ogg_vorbis__::vorbis_output_stream ov_coder(output, buffer.format(), 1.0);
-	ov_coder.write(buffer);
+	ogg_vorbis__::vorbis_output_stream ov_coder(output, seq.format(), 1.0);
+	ov_coder.write(seq);
 }
