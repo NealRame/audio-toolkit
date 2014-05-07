@@ -12,7 +12,12 @@
 *.la
 *.a
 
+*.wav
+*.mp3
+*.ogg
+
 /nr-audio-lib.sublime-workspace
 /project/build/
 /project/sublime/
 /project/xcode/
+
