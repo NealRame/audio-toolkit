@@ -1,0 +1,24 @@
+// ☠ DO NOT EDIT ☠
+// Generated file
+//    date: @DATE@
+// version: @VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@-@VERSION_HASH@
+#ifndef NR_VERSION_H_
+#define NR_VERSION_H_
+
+#include <string>
+
+namespace com {
+namespace nealrame {
+namespace audio {
+struct version {
+	static const std::string full;
+	static const std::string hash;
+	static const unsigned int major = @VERSION_MAJOR@;
+	static const unsigned int minor = @VERSION_MINOR@;
+	static const unsigned int patch = @VERSION_PATCH@;
+} version;
+}
+}
+}
+
+#endif /* NR_VERSION_H_ */

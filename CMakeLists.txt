@@ -1,0 +1,25 @@
+cmake_minimum_required(VERSION 2.6)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/project/cmake")
+
+project(AudioToolkit)
+
+include(SublimeText)
+
+string(TOUPPER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE)
+
+if(NOT CMAKE_BUILD_TYPE MATCHES "DEBUG")
+	set(CMAKE_BUILD_TYPE "RELEASE")
+else()
+	add_definitions(-DDEBUG)
+endif()
+
+set(NR_BINARIES_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin)
+
+file(MAKE_DIRECTORY ${NR_BINARIES_OUTPUT_DIR})
+
+# Runtime output path
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${NR_BINARIES_OUTPUT_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${NR_BINARIES_OUTPUT_DIR})
+
+add_subdirectory(${AudioToolkit_SOURCE_DIR}/sources)

@@ -1,67 +1,76 @@
-/*
- * audio_format.h
- *
- * Created on: March 08, 2014
- *     Author: [NealRame](mailto:contact@nealrame.com)
- */
+/// audio_format.h
+///
+/// Created on: April 14, 2014
+///     Author: [NealRame](mailto:contact@nealrame.com)
 #ifndef AUDIO_FORMAT_H_
 #define AUDIO_FORMAT_H_
 
-#include <cstddef>
-
-#include <audio/error>
+#include "audio_error.h"
 
 namespace com {
 namespace nealrame {
 namespace audio {
-/// com::nealrame::audio::format
-/// ============================
-///
-/// 
+/// class com::nealrame::audio::format
+/// ==================================
 class format {
 public:
-	/// Initialize a frame container format given a channel count and 
-	/// sample rate.
+	using size_type = size_t;
+public:
+	/// Initializes an `audio::format` given a number of channel and a
+	/// frame rate.
+	///
+	/// *Parameters*:
+	/// - `channel_count`
+	/// - `frame_rate`
+	///
+	/// *Exception:*
+	/// - `error`
+	///   If channel count or frame rate are not valid throw an error
+	/// with status `FormatWrongSampleRateValueError` or
+	/// `FormatWrongChannelCountValueError`.
 	format (unsigned int channel_count, unsigned int sample_rate)
-		throw(audio::error);
+		throw(error);
 public:
-	/// Return true if and only if this format and the other one are
-	/// equals.
-	bool operator==(const format &other) const;
-	/// Return true if and only if this format and the other one are not 
-	/// equals.
-	bool operator!=(const format &other) const { return !(*this == other);}
+	/// Returns `true` if this `format` and the other are equals.
+	bool operator== (const format &rhs) const noexcept;
+	/// Returns `true` if this `format` and the other are not equals.
+	bool operator!= (const format &rhs) const noexcept
+	{ return ! (*this == rhs); }
 public:
-	/// Return this format channel count.
-	unsigned int channel_count () const
+	/// Returns the number of channel of this `format`.
+	size_type channel_count () const noexcept
 	{ return channel_count_; }
-	/// Return this format sample rate.
-	unsigned int sample_rate () const
-	{ return sample_rate_; }
-	/// Update this format sample rate.
-	format & set_sample_rate (unsigned int rate) throw(audio::error);
-	/// Return the duration of a frame container for a given frame count.
-	double duration (unsigned int frame_count) const;
-	/// Return the duration of a frame container for a given size.
-	double duration (size_t size) const;
-	/// Return the frame count of a frame container for a given size.
-	unsigned int frame_count (size_t size) const;
-	/// Return the frame count of frame container for a given duration.
-	unsigned int frame_count (double duration) const;
-	/// Return the size of a frame container for a given frame count.
-	size_t size (unsigned int frame_count) const;
-	/// Return the size of a frame container for a given duration.
-	size_t size (double duration) const;
+
+	/// Returns the frame rate of this `format`.
+	size_type sample_rate () const noexcept
+	{ return frame_rate_; }
+
+	/// Sets the frame rate of this `format`.
+	///
+	/// *Parameters:*
+	/// - `sample_rate` the new frame rate
+	///
+	/// *Exeception:*
+	/// - `error` if frame rate is not valid
+	format & set_frame_rate (unsigned int frame_rate) throw(error);
+
+	/// Returns the duration for the given frame count.
+	///
+	/// *Parameters:*
+	/// - `frame_count`
+	double duration (size_type frame_count) const noexcept;
+
+	/// Returns the frame count for a given duration.
+	///
+	/// *Parameters:*
+	/// - `duration`
+	size_type frame_count (double duration) const noexcept;
 private:
-	unsigned int channel_count_;
-	unsigned int sample_rate_;
+	size_type channel_count_;
+	size_type frame_rate_;
 };
-#if defined (TEST)
-#include <ostream>
-void PrintTo (const format &, ::std::ostream *os);
-#endif
 } // namespace audio
 } // namespace nealrame
 } // namespace com
 
-#endif /* AUDIO_BUFFER_H_ */
+#endif /* AUDIO_FORMAT_H_ */

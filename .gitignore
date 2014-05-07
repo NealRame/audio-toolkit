@@ -12,12 +12,12 @@
 *.la
 *.a
 
-/audio-toolkit.sublime-workspace
-/Makefile.depends
-/Debug/
-/Release/
-/Tests/
-
 *.wav
-
 *.mp3
+*.ogg
+
+/nr-audio-lib.sublime-workspace
+/project/build/
+/project/sublime/
+/project/xcode/
+

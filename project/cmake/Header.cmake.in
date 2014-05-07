@@ -1,0 +1,5 @@
+// ☠ DO NOT EDIT ☠
+// Generated file
+//    date: @DATE@
+// version: @VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@-@VERSION_HASH@
+#include "@HEADER@"

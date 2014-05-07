@@ -1,8 +1,8 @@
-/// audio_mp3_coder.h
-/// Created on: April 26, 2014
+/// audio_ogg_vorbis_coder.h
+/// Created on: May 1, 2014
 ///     Author: [NealRame](mailto:contact@nealrame.com)
-#ifndef AUDIO_MP3_CODER_H_
-#define AUDIO_MP3_CODER_H_
+#ifndef AUDIO_OGG_VORBIS_CODER_H_
+#define AUDIO_OGG_VORBIS_CODER_H_
 
 #include <audio/codecs/coder>
 
@@ -11,7 +11,7 @@ namespace nealrame {
 namespace audio {
 class sequence;
 namespace codec {
-class MP3_coder : public coder {
+class OGGVorbis_coder : public coder {
 protected:
 	virtual void encode_ (std::ostream &, const sequence &) const
 		throw(error);
@@ -20,4 +20,4 @@ protected:
 } /* namespace audio */
 } /* namespace nealrame */
 } /* namespace com */
-#endif /* AUDIO_MP3_CODEC_H_ */
+#endif /* AUDIO_OGG_VORBIS_CODER_H_ */

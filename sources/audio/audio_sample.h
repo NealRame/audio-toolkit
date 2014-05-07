@@ -1,15 +1,16 @@
-/*
- * audio_sample.h
- *
- * Created on: March 11, 2014
- *     Author: [NealRame](mailto:contact@nealrame.com)
- */
+// audio_sample.h
+// Created on: March 11, 2014
+//     Author: [NealRame](mailto:contact@nealrame.com) 
 #ifndef AUDIO_SAMPLE_H_
 #define AUDIO_SAMPLE_H_
 
 #include <cstdint>
 #include <cmath>
 #include <limits>
+
+#if defined(DEBUG)
+#	include <iostream>
+#endif
 
 namespace com {
 namespace nealrame {
@@ -22,15 +23,23 @@ inline float value_to_sample (T v) {
 			std::fabs(std::numeric_limits<T>::min()),
 			std::numeric_limits<T>::max());
 
+#if defined(DEBUG) && defined(DEBUG_SAMPLE_CONVERSION)
+	std::cerr << "max: " << max << std::endl;
+	std::cerr << "  v: " << v << std::endl;
+#endif
+
 	float f = static_cast<float>(v)/max;
 
-	if (f > 1) {
-		return 1.f;
-	}
+#if defined(DEBUG) && defined(DEBUG_SAMPLE_CONVERSION)
+	std::cerr << "  f: " << f << std::endl;
+#endif
 
-	if (f < -1) {
-		return -1.f;
-	}
+	f = std::fmin(f,  1.f);
+	f = std::fmax(f, -1.f);
+
+#if defined(DEBUG) && defined(DEBUG_SAMPLE_CONVERSION)
+	std::cerr << "  f: " << f << std::endl;
+#endif
 
 	return f;
 }

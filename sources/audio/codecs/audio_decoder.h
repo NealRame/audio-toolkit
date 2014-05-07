@@ -1,14 +1,11 @@
-/*
- * audio_decoder.h
- *
- * Created on: March 09, 2014
- *     Author: [NealRame](mailto:contact@nealrame.com)
- */
+/// audio_decoder.h
+/// 
+/// Created on: April 19, 2014
+///     Author: [NealRame](mailto:contact@nealrame.com)
 #ifndef AUDIO_DECODER_H_
 #define AUDIO_DECODER_H_
 
-#include <fstream>
-#include <memory>
+#include <istream>
 #include <string>
 
 #include <audio/error>
@@ -16,16 +13,32 @@
 namespace com {
 namespace nealrame {
 namespace audio {
-class buffer;
+class sequence;
 namespace codec {
 class decoder {
 public:
-	static std::shared_ptr<decoder> get (const std::string &extension) throw(error);
-public:
-	virtual ~decoder () {}
-public:
-	virtual std::shared_ptr<buffer> decode (const std::string &) const throw(error);
-	virtual std::shared_ptr<buffer> decode (std::ifstream &) const throw(error) = 0;
+	/// Decodes the given file.
+	/// 
+	/// *Parameters:*
+	/// - `filepath`
+	///   Path of the file to be decoded.
+	///
+	/// *Exceptions:*
+	/// - `com::nealrame::audio::error`
+	virtual sequence decode (const std::string &filepath) const throw(error) final;
+
+	/// Decodes the given stream.
+	///
+	/// *Parameters:*
+	/// - `stream`
+	///   The stream to be decoded.
+	///
+	/// *Exceptions:*
+	/// - `com::nealrame::audio::error`
+	virtual sequence decode (std::istream &stream) const throw(error) final;
+
+protected:
+	virtual sequence decode_ (std::istream &) const throw(error) = 0;
 };
 } /* namespace codec */
 } /* namespace audio */

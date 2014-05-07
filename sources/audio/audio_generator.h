@@ -1,57 +1,73 @@
-/*
- * audio_generator.h
- *
- * Created on: March 08, 2014
- *     Author: [NealRame](mailto:contact@nealrame.com)
- */
+// audio_generator.h
+//
+// Created on: May 07, 2014
+//     Author: [NealRame](mailto:contact@nealrame.com)
 #ifndef AUDIO_GENERATOR_H_
 #define AUDIO_GENERATOR_H_
 
 #include <memory>
 
 #include <audio/format>
-#include <audio/frame>
-#include <audio/buffer>
+#include <audio/sequence>
 
 namespace com {
 namespace nealrame {
 namespace audio {
 
-/// com::nealrame::audio::generator
-///
+/// class com::nealrame::audio::generator
+/// =====================================
 template <class Engine>
 class generator {
 public:
-	template<typename ...Args> 
+	/// Constructs a generator.
+	template<typename ...Args>
 	generator(const class format &fmt, Args... args) :
-		engine_(fmt, std::forward<Args>(args)...) {
+		format_(fmt),
+		generate_(fmt, std::forward<Args>(args)...) {
 	}
+
 public:
-	void reset () { engine_.reset(); }
-	const_frame frame () {
-		return engine_.frame();
-	}
-	std::shared_ptr<class buffer> buffer (unsigned int frame_count) {
-		std::shared_ptr<class buffer> buf =
-			std::make_shared<class buffer>(engine_.format, frame_count);
-		audio::sequence seq = buf->sequence();
-		for (class frame f: seq) {
-			f = frame();
+	/// Returns the format of this `generator`.
+	const format & format () const
+	{ return format_; }
+
+	/// Resets this `generator` to its initial value.
+	void reset ()
+	{ generate_.reset(); }
+
+	/// Returns the next frame of this `generator`.
+	sequence::const_frame operator() () 
+	{ return generate_(); }
+
+	///  Returns a `seqence` with a given count of frame.
+	///
+	/// *Parameters:*
+	/// - `frame_count`
+	///   The requested count of frame.
+	class sequence sequence (unsigned int frame_count) {
+		class sequence seq(format_, frame_count);
+		for (auto f: seq) {
+			f = generate_();
 		};
-		return buf;
+		return seq;
 	}
-	std::shared_ptr<class buffer> buffer (double duration) {
-		std::shared_ptr<class buffer> buf =
-			std::make_shared<class buffer>(engine_.format, duration);
-		audio::sequence seq = buf->sequence();
-		for (class frame f: seq) {
-			auto g = frame();
-			f = g;
+
+	/// Returns a `sequence` of a given duration.
+	///
+	/// *Parameters:*
+	/// - `duration`
+	///   The requested duration.
+	class sequence sequence (double duration) {
+		class sequence seq(format_, duration);
+		for (auto f: seq) {
+			f = generate_();
 		};
-		return buf;
+		return seq;
 	}
+	
 private:
-	Engine engine_;
+	class format format_;
+	Engine generate_;
 };
 } // namespace audio
 } // namespace nealrame
