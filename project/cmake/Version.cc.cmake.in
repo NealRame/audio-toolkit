@@ -2,7 +2,7 @@
 // Generated file
 //    date: @DATE@
 // version: @VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@-@VERSION_HASH@
-#include <audio/version>
+#include <audio_toolkit_version>
 
 const std::string com::nealrame::audio::version::full = "v@VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@";
 const std::string com::nealrame::audio::version::hash = "@VERSION_HASH@";

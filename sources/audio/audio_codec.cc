@@ -3,6 +3,7 @@
 ///     Author: [NealRame](mailto:contact@nealrame.com)
   
 #include "audio_codec.h"
+#include "audio_sequence.h"
 
 #include <boost/algorithm/string.hpp>
 
@@ -52,6 +53,21 @@ std::shared_ptr<codec::decoder> get_decoder(const std::string &ext) {
 	}
 
 	throw error(error::DecoderNotFound);
+}
+
+
+audio::sequence load_buffer(const std::string &filename) {
+	std::string extension = filename.substr(filename.length() - 4);
+	std::shared_ptr<audio::codec::decoder> decoder =
+		audio::get_decoder(extension);
+	return decoder->decode(filename);
+}
+
+void store_buffer(const std::string &filename, const audio::sequence &seq) {
+	std::string extension = filename.substr(filename.length() - 4);
+	std::shared_ptr<audio::codec::coder> coder =
+		audio::get_coder(extension);
+	coder->encode(filename, seq);
 }
 
 }

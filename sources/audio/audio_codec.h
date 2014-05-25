@@ -15,8 +15,11 @@ namespace com {
 namespace nealrame {
 namespace audio {
 
-extern std::shared_ptr<codec::coder> get_coder(const std::string &ext);
-extern std::shared_ptr<codec::decoder> get_decoder(const std::string &ext);
+std::shared_ptr<codec::coder> get_coder(const std::string &ext);
+std::shared_ptr<codec::decoder> get_decoder(const std::string &ext);
+
+sequence load_buffer(const std::string &filename);
+void store_buffer(const std::string &filename, const sequence &);
 
 } // namespace audio
 } // namespace nealrame

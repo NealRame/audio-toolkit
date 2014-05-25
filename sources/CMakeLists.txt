@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.6)
 project(AudioToolkit)
 
 include(GitDescribe)
+include(GenerateHeaders)
 
 git_describe(VERSION_MAJOR VERSION_MINOR VERSION_PATCH VERSION_HASH)
 
@@ -45,34 +46,19 @@ link_directories(${LIBVORBISENC_LIBRARY_DIRS})
 set(AUDIO_GENERATED_INCLUDES_DIRECTORY ${GENERATED_INCLUDES_DIRECTORY}/audio)
 set(AUDIO_SOURCES_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/audio)
 
-file(MAKE_DIRECTORY ${AUDIO_GENERATED_INCLUDES_DIRECTORY})
+generate_headers(${AUDIO_GENERATED_INCLUDES_DIRECTORY} ${AUDIO_SOURCES_DIRECTORY} "audio")
 
-file(GLOB_RECURSE RELATIVE_AUDIO_HEADERS RELATIVE ${AUDIO_SOURCES_DIRECTORY} "audio_*.h")
+file(GLOB_RECURSE AUDIO_SOURCES ${AUDIO_SOURCES_DIRECTORY} "audio_*.cc" "audio_*.h")
 
-foreach(HEADER ${RELATIVE_AUDIO_HEADERS})
-	get_filename_component(NAME ${HEADER} NAME_WE)
-	get_filename_component(DIRNAME ${HEADER} DIRECTORY)
+set(UTILS_GENERATED_INCLUDES_DIRECTORY ${GENERATED_INCLUDES_DIRECTORY}/utils)
+set(UTILS_SOURCES_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/utils)
 
-	set(DIRNAME ${AUDIO_GENERATED_INCLUDES_DIRECTORY}/${DIRNAME})
-	string(REGEX REPLACE "^audio_(.*)$" "\\1" NAME ${NAME})
-	string(TIMESTAMP DATE "%Y/%m/%d - %H:%M:%S")
-	set(HEADER ${CMAKE_CURRENT_SOURCE_DIR}/audio/${HEADER})
+generate_headers(${UTILS_GENERATED_INCLUDES_DIRECTORY} ${UTILS_SOURCES_DIRECTORY} "utils")
 
-	file(MAKE_DIRECTORY ${AUDIO_GENERATED_INCLUDES_DIRECTORY}/${DIRNAME})
+file(GLOB_RECURSE UTILS_SOURCES ${UTILS_SOURCES_DIRECTORY} "utils_*.cc" "utils_*.h")
 
-	configure_file(
-		${CMAKE_SOURCE_DIR}/project/cmake/Header.cmake.in
-		${DIRNAME}/${NAME}
-	)
-endforeach()
-
-set(VERSION_HEADER ${AUDIO_GENERATED_INCLUDES_DIRECTORY}/version)
-set(VERSION_SOURCE ${CMAKE_CURRENT_BINARY_DIR}/version.cc)
-
-file(GLOB_RECURSE AUDIO_HEADERS ${AUDIO_SOURCES_DIRECTORY} "audio_*.h")
-file(GLOB_RECURSE AUDIO_SOURCES ${AUDIO_SOURCES_DIRECTORY} "audio_*.cc")
-
-list(APPEND AUDIO_SOURCES ${VERSION_SOURCE})
+set(VERSION_HEADER ${GENERATED_INCLUDES_DIRECTORY}/audio_toolkit_version)
+set(VERSION_SOURCE ${CMAKE_CURRENT_BINARY_DIR}/audio_toolkit_version.cc)
 
 configure_file(
 	${CMAKE_SOURCE_DIR}/project/cmake/Version.h.cmake.in
@@ -84,7 +70,7 @@ configure_file(
 	${VERSION_SOURCE}
 )
 
-add_library(libaudiotoolkit SHARED ${AUDIO_SOURCES} ${AUDIO_HEADERS})
+add_library(libaudiotoolkit SHARED ${AUDIO_SOURCES} ${UTILS_SOURCES} ${VERSION_SOURCE})
 target_link_libraries(libaudiotoolkit mp3lame mpg123 ogg vorbis vorbisenc)
 
 ###
