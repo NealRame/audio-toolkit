@@ -25,7 +25,7 @@ using com::nealrame::audio::codec::OGGVorbis_decoder;
 // Decoder ///////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-namespace ogg_vorbis__ {
+namespace ogg_vorbis_ {
 
 class ogg_input_stream {
 public:
@@ -241,10 +241,10 @@ private:
 	vorbis_block block_;
 };
 
-}; // namespace ogg_vorbis__
+}; // namespace ogg_vorbis_
 
 sequence OGGVorbis_decoder::decode_ (std::istream &input) const throw(error) {
-	ogg_vorbis__::vorbis_input_stream ov_decoder(input);
+	ogg_vorbis_::vorbis_input_stream ov_decoder(input);
 
 	sequence seq(ov_decoder.get_format());
 	ov_decoder.read(seq);
@@ -256,7 +256,7 @@ sequence OGGVorbis_decoder::decode_ (std::istream &input) const throw(error) {
 // Decoder ///////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-namespace ogg_vorbis__ {
+namespace ogg_vorbis_ {
 
 class ogg_output_stream {
 public:
@@ -435,10 +435,10 @@ private:
 	vorbis_info info_;
 };
 
-}; // namespace ogg_vorbis__
+}; // namespace ogg_vorbis_
 
 void OGGVorbis_coder::encode_ (std::ostream &output, const sequence &seq) const
 	throw(error) {
-	ogg_vorbis__::vorbis_output_stream ov_coder(output, seq.format(), 1.0);
+	ogg_vorbis_::vorbis_output_stream ov_coder(output, seq.format(), 1.0);
 	ov_coder.write(seq);
 }
