@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.0)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/project/cmake")
 
@@ -14,6 +14,7 @@ else()
 	add_definitions(-DDEBUG)
 endif()
 
+set(CMAKE_MACOSX_RPATH 1)
 set(NR_BINARIES_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin)
 
 file(MAKE_DIRECTORY ${NR_BINARIES_OUTPUT_DIR})
