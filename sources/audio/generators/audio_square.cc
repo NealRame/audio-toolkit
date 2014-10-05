@@ -12,38 +12,39 @@ using namespace com::nealrame::audio;
 using com::nealrame::audio::generators::square;
 
 struct square::impl {
-	impl (class format format) :
-		sequence(format, format::size_type(1)) {
-	}
+	impl(class format format, float t0, float c) :
+		sequence(format, format::size_type(1)),
+		constant(c),
+		step(1./format.sample_rate()),
+		t(t0)
+	{ }
 	class sequence sequence;
 	float constant;
 	float step;
+	float t;
 };
 
-square::square (class format fmt, float init, float a, float f) :
+square::square(class format fmt, float init, float a, float f) :
 	amplitude(std::fabs(std::fmin(a, 1.))),
 	frequency(f),
 	t0(init),
-	t_(init),
-	pimpl_(new impl(fmt)) {
-	pimpl_->constant = boost::math::constants::two_pi<float>()*frequency;
-	pimpl_->step = 1./fmt.sample_rate();
-}
+	d_(new impl(fmt, t0, boost::math::constants::two_pi<float>()*frequency))
+{ }
 
-square::~square () {
-}
+square::~square()
+{ }
 
-sequence::const_frame square::operator() () {
-	sequence::frame f = pimpl_->sequence.at(0);
+const sequence::frame square::operator()()
+{
+	auto f = d_->sequence.at(0);
+	auto v = sinf(d_->constant*d_->t);
+	auto s = v > 0 ? amplitude : -amplitude;
 
-	float v = sinf(pimpl_->constant*t_);
-	float s = v > 0 ? amplitude : -amplitude;
-
-	t_ += pimpl_->step;
-
-	for (float &sample: f) {
+	for (auto &sample: f) {
 		sample = s;
 	}
+
+	d_->t += d_->step;
 
 	return f;
 }

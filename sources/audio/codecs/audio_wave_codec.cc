@@ -153,7 +153,7 @@ format::size_type fill_audio_buffer (const std::vector<T> &pcm_buf, sequence &se
 	auto it = pcm_buf.begin();
 	std::for_each(
 		seq.set_frame_count(total_frame_count), seq.end(),
-		[&it](sequence::frame frame) {
+		[&](sequence::frame frame) {
 			for (float &sample: frame) {
 				sample = value_to_sample<T>(*it++);
 			}

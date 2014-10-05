@@ -7,79 +7,108 @@
 
 using namespace com::nealrame::audio;
 
-sequence::sequence (const class format &format) noexcept :
-	format_(format) {
+sequence::frame::frame(const frame &rhs)
+{ *this = rhs; }
+
+sequence::frame::frame(iterator first, iterator last)
+{
+	first_ = first; last_ = last;
 }
 
-sequence::sequence (const class format &format, format::size_type frame_count) :
-	format_(format),
-	frames_(2*frame_count) {
+sequence::frame & sequence::frame::operator=(const frame &rhs)
+{
+    std::copy(rhs.first_, rhs.last_, first_);
+	return *this; 
 }
 
-sequence::sequence (const class format &format, double duration) :
-	sequence(format, format.frame_count(duration)) {
-}
+format::size_type sequence::frame::channel_count() const
+{ return last_ - first_; }
 
-sequence::sequence (const sequence &rhs) :
-	format_(rhs.format()),
-	frames_(rhs.frames_) {
-}
+sequence::frame::reference sequence::frame::at(format::size_type channel)
+{ return *(first_ + channel); }
 
-sequence::sequence (sequence &&rhs) noexcept :
-	format_(rhs.format()),
-	frames_(std::move(rhs.frames_)) {
-}
+sequence::frame::iterator sequence::frame::begin()
+{ return first_; }
 
-sequence & sequence::operator= (const sequence &rhs) {
-	format_ = rhs.format();
-	frames_ = rhs.frames_;
+sequence::frame::iterator sequence::frame::end()
+{ return last_; }
+
+struct sequence::impl {
+	class format format;
+	std::vector<float> frames;
+};
+
+sequence::sequence(const class format &format) noexcept :
+	d_(new impl{format})
+{ }
+
+sequence::sequence(const class format &format, format::size_type frame_count) :
+	d_(new impl({format, std::vector<float>(2*frame_count)}))
+{ }
+
+sequence::sequence(const class format &format, double duration) :
+	sequence(format, format.frame_count(duration))
+{ }
+
+sequence::sequence(const sequence &rhs)
+{ *this = rhs; }
+
+sequence::sequence(sequence &&rhs) noexcept :
+	d_(std::move(rhs.d_))
+{ }
+
+sequence::~sequence()
+{ }
+
+sequence & sequence::operator=(const sequence &rhs)
+{
+	d_.reset(new impl{rhs.d_->format, rhs.d_->frames});
 	return *this;
 }
 
-sequence & sequence::operator= (sequence &&rhs) noexcept {
-	format_ = rhs.format();
-	frames_ = std::move(rhs.frames_);
+sequence & sequence::operator= (sequence &&rhs) noexcept
+{
+	d_ = std::move(rhs.d_);
 	return *this;
 }
 
-void sequence::swap (sequence &rhs) noexcept {
-	std::swap(format_, rhs.format_);
-	std::swap(frames_, rhs.frames_);
-}
+void sequence::swap(sequence &rhs) noexcept
+{ d_.swap(rhs.d_); }
 
-double sequence::duration () const noexcept {
-	return format_.duration(frame_count());
-}
 
-format::size_type sequence::frame_count () const noexcept {
-	return frames_.size()/format_.channel_count();
-}
+class format & sequence::format() noexcept
+{ return d_->format; }
 
-format::size_type sequence::capacity () const noexcept {
-	return frames_.capacity()/format_.channel_count();
-}
+double sequence::duration() const noexcept
+{ return d_->format.duration(frame_count()); }
 
-sequence::frame sequence::at (format::size_type idx) {
-	format::size_type channel_count = format_.channel_count();
-	auto it = frames_.begin() + channel_count*idx;
+format::size_type sequence::frame_count() const noexcept
+{ return d_->frames.size()/d_->format.channel_count(); }
+
+format::size_type sequence::capacity () const noexcept
+{ return d_->frames.capacity()/d_->format.channel_count(); }
+
+sequence::frame sequence::at(format::size_type idx)
+{
+	format::size_type channel_count = d_->format.channel_count();
+	auto it = d_->frames.data() + channel_count*idx;
 	return frame(it, it + channel_count);
 }
 
-float * sequence::data (format::size_type index) noexcept {
-	return frames_.data() + index*format_.channel_count();
-}
+float * sequence::data(format::size_type index) noexcept
+{ return d_->frames.data() + index*d_->format.channel_count(); }
 
-const float * sequence::data (format::size_type index) const noexcept {
-	return const_cast<sequence *>(this)->data(index);
-}
+const float * sequence::data(format::size_type index) const noexcept
+{ return const_cast<sequence *>(this)->data(index); }
 
-format::size_type sequence::copy (float *pcm, format::size_type count, format::size_type offset) const {
-	auto channel_count = format_.channel_count();
+format::size_type sequence::copy(float *pcm, format::size_type count, format::size_type offset) const
+{
+	auto channel_count = d_->format.channel_count();
 
-	offset = std::max(offset*channel_count, frames_.size());
-	count = std::min(count*channel_count, frames_.size() - offset);
+	offset = std::max(offset*channel_count, d_->frames.size());
+	count = std::min(count*channel_count, d_->frames.size() - offset);
 
-	auto it = frames_.begin() + offset, end = it + count;
+	auto it = d_->frames.begin() + offset, end = it + count;
 	while (it != end) {
 		*pcm++ = *it++;
 	}
@@ -87,62 +116,92 @@ format::size_type sequence::copy (float *pcm, format::size_type count, format::s
 	return count;
 }
 
-format::size_type sequence::copy (float **pcm, format::size_type count, format::size_type offset) const {
-	auto channel_count = format_.channel_count();
+format::size_type sequence::copy(float **pcm, format::size_type count, format::size_type offset) const
+{
+	auto channel_count = d_->format.channel_count();
 
-	offset = std::min(offset*channel_count, frames_.size());
-	count = std::min(count*channel_count, frames_.size() - offset);
+	offset = std::min(offset*channel_count, d_->frames.size());
+	count = std::min(count*channel_count, d_->frames.size() - offset);
 
-	auto it = frames_.begin() + offset, end = it + count;
+	auto it = d_->frames.begin() + offset, end = it + count;
 	while (it != end) {
 		for (auto i = 0; i < channel_count; ++i) {
 			*pcm[i]++ = *it++;
 		}
 	}
+
 	return count;
 }
 
-void sequence::append (const float *pcm, format::size_type frame_count) {
-	for (int i = 0, count = format_.channel_count()*frame_count; i < count; ++i) {
-		frames_.push_back(pcm[i]);
+void sequence::append(const float *pcm, format::size_type frame_count)
+{
+	for (int i = 0, count = d_->format.channel_count()*frame_count; i < count; ++i) {
+		d_->frames.push_back(pcm[i]);
 	}
 }
 
-void sequence::append (const float * const *pcm, format::size_type frame_count) {
+void sequence::append(const float * const *pcm, format::size_type frame_count) {
 	for (format::size_type j = 0; j < frame_count; ++j) {
-		for (format::size_type i = 0, count = format_.channel_count(); i < count; ++i) {
-			frames_.push_back(pcm[i][j]);
+		for (format::size_type i = 0, count = d_->format.channel_count(); i < count; ++i) {
+			d_->frames.push_back(pcm[i][j]);
 		}
 	}
 }
 
-void sequence::append (const_frame frame) {
+void sequence::append(const frame &frame) {
 	for (auto sample: frame) {
-		frames_.push_back(sample);
+		d_->frames.push_back(sample);
 	}
 }
 
-void sequence::append (const sequence &rhs) throw(error) {
-	for (auto sample: rhs.frames_) {
-		frames_.push_back(sample);
+void sequence::append(const sequence &rhs) throw(error) {
+	for (auto sample: rhs.d_->frames) {
+		d_->frames.push_back(sample);
 	}
 }
 
-void sequence::reserve (double duration) {
-	reserve(format_.frame_count(duration));
-}
+void sequence::reserve(double duration)
+{ reserve(d_->format.frame_count(duration)); }
 
-void sequence::reserve (format::size_type frame_count) {
-	frames_.reserve(frame_count*format_.channel_count());
-}
+void sequence::reserve(format::size_type frame_count)
+{ d_->frames.reserve(frame_count*d_->format.channel_count()); }
 
-sequence::frame_iterator sequence::set_duration (double duration) {
-	return set_frame_count(format_.frame_count(duration));
-}
+sequence::frame_iterator sequence::set_duration (double duration)
+{ return set_frame_count(d_->format.frame_count(duration)); }
 
-sequence::frame_iterator sequence::set_frame_count (format::size_type frame_count) {
+sequence::frame_iterator sequence::set_frame_count (format::size_type frame_count)
+{
 	reserve(frame_count);
 	auto it = end();
-	frames_.resize(frame_count*format_.channel_count());
+	d_->frames.resize(frame_count*d_->format.channel_count());
 	return it;
 }
+
+/// Returns a `frame_iterator` on the first frame of this `sequence`.
+sequence::frame_iterator sequence::begin()
+{ return frame_iterator(at(0)); }
+
+/// Returns a `const_frame_iterator` on the first audio frame of this
+/// `sequence`.
+sequence::const_frame_iterator sequence::begin () const
+{ return const_cast<sequence *>(this)->begin(); }
+
+/// Returns a `const_frame_iterator` on the first audio frame of this
+/// `sequence`.
+sequence::const_frame_iterator sequence::cbegin () const
+{ return const_cast<sequence *>(this)->begin(); }
+
+/// Returns a `frame_iterator` on the frame following the last audio 
+/// frame of this `sequence`.
+sequence::frame_iterator sequence::end ()
+{ return begin() + frame_count(); }
+
+/// Returns a `const_frame_iterator` on the frame following the last
+/// audio frame of this `sequence`.
+sequence::const_frame_iterator sequence::end () const
+{ return const_cast<sequence *>(this)->end(); }
+
+/// Returns a `const_frame_iterator` on the frame following the last
+/// audio frame of this `sequence`.
+sequence::const_frame_iterator sequence::cend () const
+{ return const_cast<sequence *>(this)->end(); }

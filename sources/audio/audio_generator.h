@@ -28,15 +28,15 @@ public:
 
 public:
 	/// Returns the format of this `generator`.
-	const format & format () const
+	const format & format() const
 	{ return format_; }
 
 	/// Resets this `generator` to its initial value.
-	void reset ()
+	void reset()
 	{ generate_.reset(); }
 
 	/// Returns the next frame of this `generator`.
-	sequence::const_frame operator() () 
+	const sequence::frame operator()() 
 	{ return generate_(); }
 
 	///  Returns a `seqence` with a given count of frame.
@@ -44,7 +44,7 @@ public:
 	/// *Parameters:*
 	/// - `frame_count`
 	///   The requested count of frame.
-	class sequence sequence (unsigned int frame_count) {
+	class sequence sequence(unsigned int frame_count) {
 		class sequence seq(format_, frame_count);
 		for (auto f: seq) {
 			f = generate_();
@@ -57,7 +57,7 @@ public:
 	/// *Parameters:*
 	/// - `duration`
 	///   The requested duration.
-	class sequence sequence (double duration) {
+	class sequence sequence(double duration) {
 		class sequence seq(format_, duration);
 		for (auto f: seq) {
 			f = generate_();

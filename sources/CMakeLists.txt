@@ -17,7 +17,7 @@ find_package(LibVorbisEnc REQUIRED)
 set(GENERATED_INCLUDES_DIRECTORY ${CMAKE_BINARY_DIR}/includes)
 file(MAKE_DIRECTORY ${GENERATED_INCLUDES_DIRECTORY})
 
-set(COMMON_CXX_FLAGS "-std=c++11 -stdlib=libc++ -ferror-limit=0 -Wall -Werror")
+set(COMMON_CXX_FLAGS "-std=c++1y -stdlib=libc++ -ferror-limit=0 -Wall -Werror")
 set(CMAKE_CXX_FLAGS_DEBUG "${COMMON_CXX_FLAGS} -g -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "${COMMON_CXX_FLAGS} -O3")
 
