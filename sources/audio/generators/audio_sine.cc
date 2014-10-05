@@ -11,33 +11,41 @@ using namespace com::nealrame::audio;
 using com::nealrame::audio::generators::sine;
 
 struct sine::impl {
-	impl (class format format) :
-		sequence(format, format::size_type(1)) {
-	}
+	impl (class format format, float t0, float c) :
+		sequence(format, format::size_type(1)),
+		constant(c),
+		step(1./format.sample_rate()),
+		t(t0)
+	{ }
 	class sequence sequence;
 	float constant;
 	float step;
+	float t;
 };
 
 sine::sine (class format fmt, float init, float a, float f) :
 	amplitude(std::fabs(std::fmin(a, 1.))),
 	frequency(f),
 	t0(init),
-	t_(init),
-	pimpl_(new impl(fmt)) {
-	pimpl_->constant = boost::math::constants::two_pi<float>()*frequency;
-	pimpl_->step = 1./fmt.sample_rate();
-}
+	d_(new impl(fmt, t0, boost::math::constants::two_pi<float>()*frequency))
+{ }
 
-sine::~sine () {
-}
+sine::~sine ()
+{ }
 
-sequence::const_frame sine::operator() () {
-	float v = amplitude*sinf(pimpl_->constant*t_);
-	sequence::frame f = pimpl_->sequence.at(0);
-	t_ += pimpl_->step;
-	for (float &sample: f) {
+void sine::reset()
+{ d_->t = t0; }
+
+const sequence::frame sine::operator()()
+{
+	auto v = amplitude*sinf(d_->constant*d_->t);
+	auto f = d_->sequence.at(0);
+
+	for (auto &sample: f) {
 		sample = v;
 	}
+
+	d_->t += d_->step;
+	
 	return f;
 }

@@ -15,7 +15,7 @@ function(generate_sublime_text_project _cxx_flags _definitions _include_director
 			# "/usr/include"
 			# "/System/Library/Frameworks"
 			# "/Library/Frameworks"
-			"/Library/Developer/CommandLineTools/usr/lib/c++/v1/"
+			"/Library/Developer/CommandLineTools/usr/include/c++/v1"
 			${_include_directories}
 		)
 	endif()

@@ -10,31 +10,30 @@
 using namespace com::nealrame::audio;
 using com::nealrame::audio::generators::noise;
 
-static float random_value () {
-	static std::default_random_engine engine(time(nullptr));
-	static std::uniform_real_distribution<float> distribute;
-	return distribute(engine);
-}
-
 struct noise::impl {
-	impl (class format format) :
-		sequence(format, format::size_type(1)) {
-	}
+	impl(class format format) :
+		sequence(format, format::size_type(1)),
+		distribution(0, 1),
+		rand(std::bind(distribution, std::default_random_engine()))
+	{ }
 	class sequence sequence;
+    std::uniform_int_distribution<> distribution;
+    std::function<float()> rand;
 };
 
-noise::noise (class format fmt, float a) :
+noise::noise(class format fmt, float a) :
 	amplitude(std::fabs(std::fmin(a, 1.))),
-	pimpl_(new impl(fmt)) {
-}
+	d_(std::make_unique<impl>(fmt))
+{ }
 
-noise::~noise () {
-}
+noise::~noise()
+{ }
 
-sequence::const_frame noise::operator() () {
-	sequence::frame f = pimpl_->sequence.at(0);
+const sequence::frame noise::operator()()
+{
+	auto f = d_->sequence.at(0);
 	for (auto &sample: f) {
-		sample = amplitude*random_value();
+		sample = amplitude*d_->rand();
 	}
 	return f;
 }

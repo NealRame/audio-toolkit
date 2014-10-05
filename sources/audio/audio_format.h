@@ -69,6 +69,9 @@ private:
 	size_type channel_count_;
 	size_type frame_rate_;
 };
+
+std::ostream & operator<<(std::ostream &, format);
+
 } // namespace audio
 } // namespace nealrame
 } // namespace com

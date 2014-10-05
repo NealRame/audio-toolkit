@@ -21,27 +21,32 @@
 using namespace com::nealrame;
 
 int main (int argc, char **argv) {
+
+#if defined(DEBUG)
+	std::cerr << "starting audiotoolkit" << std::endl;
+#endif
+	
 	std::cout << audio::version::full << std::endl;
 
-	// try {
-		// audio::generator<audio::generators::noise> noise(audio::format(2, 44100), 0.8);
-		// audio::generator<audio::generators::sawtooth> sawtooth(audio::format(2, 44100), 0., 0.8, 110.);
+	try {
+		audio::generator<audio::generators::noise> noise(audio::format(2, 44100), 0.8);
+		audio::generator<audio::generators::sawtooth> sawtooth(audio::format(2, 44100), 0., 0.8, 110.);
 		audio::generator<audio::generators::sine> sine(audio::format(2, 44100), 0., 0.8, 110.);
-		// audio::generator<audio::generators::square> square(audio::format(2, 44100), 0., 0.8, 110.);
-		// audio::generator<audio::generators::triangle> triangle(audio::format(2, 44100), 0., 0.8, 110);
+		audio::generator<audio::generators::square> square(audio::format(2, 44100), 0., 0.8, 110.);
+		audio::generator<audio::generators::triangle> triangle(audio::format(2, 44100), 0., 0.8, 110);
 
-		// audio::store_buffer("noise.wav", noise.sequence(2.));
-		// audio::store_buffer("sawtooth.wav", sawtooth.sequence(2.));
+		audio::store_buffer("noise.wav", noise.sequence(2.));
+		audio::store_buffer("sawtooth.wav", sawtooth.sequence(2.));
 		audio::store_buffer("sine.mp3", sine.sequence(2.));
 		audio::store_buffer("sine.ogg", sine.sequence(2.));
-		// audio::store_buffer("square.wav", square.sequence(2.));
-		// audio::store_buffer("triangle.wav", triangle.sequence(2.));
+		audio::store_buffer("square.wav", square.sequence(2.));
+		audio::store_buffer("triangle.wav", triangle.sequence(2.));
 		
-	// } catch (audio::error &err) {
-	// 	std::cerr << err.status() << std::endl;
-	// 	std::cerr << err.what() << std::endl;
-	// 	return 1;
-	// }
+	} catch (audio::error &err) {
+		std::cerr << err.status() << std::endl;
+		std::cerr << err.what() << std::endl;
+		return 1;
+	}
 
 	// try {
 	// 	if (argc > 1) {
@@ -53,6 +58,12 @@ int main (int argc, char **argv) {
 	// 	std::cerr << err.what() << std::endl;
 	// 	return 1;
 	// }
+
+    std::cout << _LIBCPP_STD_VER << std::endl;
+    
+#if defined(DEBUG)
+	std::cerr << "leaving audiotoolkit" << std::endl;
+#endif
 
 	return 0;
 }

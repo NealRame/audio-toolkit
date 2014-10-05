@@ -11,35 +11,41 @@ using namespace com::nealrame::audio;
 using com::nealrame::audio::generators::sawtooth;
 
 struct sawtooth::impl {
-	impl(class format format) :
-		sequence(format, format::size_type(1)) {
-	}
+	impl(class format format, float init) :
+		sequence(format, format::size_type(1)),
+		step(1./format.sample_rate()),
+		t(init)
+	{ }
 	class sequence sequence;
 	float step;
+	float t;
 };
 
-sawtooth::sawtooth (class format fmt, float init, float a, float f) :
+sawtooth::sawtooth(class format fmt, float init, float a, float f) :
 	format(fmt),
 	amplitude(std::fabs(std::fmin(a, 1.))),
 	frequency(f),
 	t0(init),
-	t_(init),
-	pimpl_(new impl(fmt)) {
-	pimpl_->step = 1./fmt.sample_rate();
-}
+	d_(new impl(fmt, init))
+{ }
 
-sawtooth::~sawtooth () {
-}
+sawtooth::~sawtooth()
+{ }
 
-sequence::const_frame sawtooth::operator() () {
-	float floor_part = floor(t_*frequency + 0.5);
-	float s = 2*amplitude*(t_*frequency - floor_part);
-	sequence::frame f = pimpl_->sequence.at(0);
+void sawtooth::reset()
+{ d_->t = t0; }
 
-	t_ += pimpl_->step;
+const sequence::frame sawtooth::operator()()
+{
+	auto floor_part = floor(d_->t*frequency + 0.5);
+	auto s = 2*amplitude*(d_->t*frequency - floor_part);
+	auto f = d_->sequence.at(0);
 
 	for (float &sample: f) {
 		sample = s;
 	}
+	
+	d_->t += d_->step;
+
 	return f;
 }
